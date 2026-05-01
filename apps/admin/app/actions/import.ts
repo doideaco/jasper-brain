@@ -1,5 +1,6 @@
 'use server';
 
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { revalidatePath } from 'next/cache';
 import {
@@ -8,6 +9,26 @@ import {
 } from '@jasper-brain/core';
 import { requireAdmin } from '@/lib/auth';
 import { getStore, getStoreBackend } from '@/lib/store';
+
+async function findBrandsDir(): Promise<string | null> {
+  if (process.env.BRAIN_IMPORT_ROOT) {
+    return path.resolve(process.env.BRAIN_IMPORT_ROOT);
+  }
+  const candidates = [
+    path.resolve(process.cwd(), 'brands'),
+    path.resolve(process.cwd(), '..', '..', 'brands'),
+    path.resolve(process.cwd(), 'apps', 'admin', '..', '..', 'brands'),
+  ];
+  for (const candidate of candidates) {
+    try {
+      const stat = await fs.stat(candidate);
+      if (stat.isDirectory()) return candidate;
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}
 
 export interface ImportResult {
   ok: boolean;
@@ -41,10 +62,14 @@ export async function importFromFilesystem(
     };
   }
 
-  const sourceRoot =
-    process.env.BRAIN_IMPORT_ROOT
-      ? path.resolve(process.env.BRAIN_IMPORT_ROOT)
-      : path.resolve(process.cwd(), '..', '..', 'brands');
+  const sourceRoot = await findBrandsDir();
+  if (!sourceRoot) {
+    return {
+      ok: false,
+      message:
+        'Could not locate the brands/ source directory. Set BRAIN_IMPORT_ROOT to an absolute path containing brand directories.',
+    };
+  }
 
   const source = new FilesystemStore(sourceRoot);
 
