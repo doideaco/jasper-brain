@@ -12,6 +12,7 @@
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "build:libs": "npm run build -w @jasper-brain/core -w @jasper-brain/mcp -w @jasper-brain/store-postgres",
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "mcp": "node packages/brain-mcp/dist/index.js"
