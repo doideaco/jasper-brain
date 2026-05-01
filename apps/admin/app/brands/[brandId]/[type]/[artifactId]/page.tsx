@@ -67,22 +67,20 @@ export default async function ArtifactPage({
               </div>
             )}
           </div>
-          <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex flex-col items-end gap-3 shrink-0">
             <span className="text-sm text-stone-400 font-mono">{artifact.id}</span>
-            <div className="flex items-center gap-3 mt-1">
-              <Link
-                href={`/brands/${brandId}/${facetId}/${artifact.id}/edit`}
-                className="text-sm font-medium text-stone-700 hover:text-stone-900"
-              >
-                Edit
-              </Link>
-              <DeleteButton
-                brandId={brandId}
-                facetId={facetId}
-                id={artifact.id}
-                label={artifact.name}
-              />
-            </div>
+            <Link
+              href={`/brands/${brandId}/${facetId}/${artifact.id}/edit`}
+              className="rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            >
+              Edit
+            </Link>
+            <DeleteButton
+              brandId={brandId}
+              facetId={facetId}
+              id={artifact.id}
+              label={artifact.name}
+            />
           </div>
         </div>
       </header>
