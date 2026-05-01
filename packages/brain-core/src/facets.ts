@@ -62,7 +62,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Voices',
     blurb: 'Tone, vocabulary, and style profiles.',
     aiInstructions:
-      "Before generating any text for this brand, load the primary voice via brain_get_item. Match every output to its tone descriptors, prefer/avoid vocabulary lists, and the patterns described in the body. If multiple voices exist, the brand's primaryVoiceId or the voice tagged 'primary' wins by default.",
+      "Before generating any text, fetch the primary voice (brand.primaryVoiceId, or the voice tagged 'primary'). Match the output's sentence rhythm, vocabulary, and rules in the voice's body. Before returning, scan your draft against vocabulary.avoid — if any forbidden word or phrase appears, REWRITE until it doesn't. Treat tone descriptors as constraints, not suggestions.",
     group: 'voice',
     dir: 'voices',
     builtIn: true,
@@ -74,7 +74,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Values',
     blurb: 'Beliefs that shape every decision the brand makes.',
     aiInstructions:
-      "Read every value when authoring identity-level content (about pages, mission statements, hiring copy, leadership posts). Use the example field to gauge how the value shows up in practice, not just abstractly.",
+      "When authoring identity-level content (about pages, mission, hiring, founder posts, leadership voice), check each value before drafting. The example field shows the value applied in practice — model your draft on it. If your draft contradicts a value, regenerate. Embody values, don't preach them — never explicitly state 'we believe X' unless asked.",
     group: 'voice',
     dir: 'values',
     builtIn: true,
@@ -86,7 +86,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Typography',
     blurb: 'Typefaces, font sources, and the type scale.',
     aiInstructions:
-      "When generating HTML/CSS, include each typeface's source.cssImport string in the document's stylesheet (it might be an @import URL, an @font-face block, or a <link> tag — drop in verbatim). Reference families by family name plus the stack as fallback. Apply scale steps (display/h1/body/etc.) by their fontSize, lineHeight, fontWeight, and letterSpacing exactly.",
+      "When generating HTML/CSS or design output, include each typeface's source.cssImport verbatim in the stylesheet's head (whether @import URL, @font-face block, or <link> tag). Reference families by their exact family name plus the stack as fallback. For each scale step, apply ALL specified properties exactly: fontSize, lineHeight, fontWeight, letterSpacing. NEVER substitute approximations — if a step says lineHeight: 1.05, use 1.05.",
     group: 'visual',
     dir: 'typography',
     builtIn: true,
@@ -98,7 +98,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Palettes',
     blurb: 'Named color tokens with hex values and usage rules.',
     aiInstructions:
-      "Use the named color tokens by their hex values when generating any HTML/CSS or design output. Respect role assignments — 'foreground' for text, 'background' for surfaces, 'primary' for actions. Honour the use field on each color (e.g., 'one brand color per screen') in your output.",
+      "Use the named color tokens by their EXACT hex values in any HTML/CSS, design tokens, or visual output. Respect each color's role: 'foreground' for text, 'background' for surfaces, 'primary' for primary actions only. Apply the `use` field as a hard rule (e.g., 'one brand color per screen' means one — pick the most important action and own that color). NEVER invent hex values; if you need a tone the palette doesn't have, use the nearest existing token by role.",
     group: 'visual',
     dir: 'palettes',
     builtIn: true,
@@ -110,7 +110,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Logos',
     blurb: 'Logo assets, variants, and clear-space rules.',
     aiInstructions:
-      "When embedding the brand mark, pick the asset variant that matches the context — wordmark on light, dark on dark, icon when space is tight. Use the assets[].url verbatim in <img> or background-image. Respect the clearSpace and minSize rules.",
+      "Pick the asset variant whose `background` field matches the surface you're placing it on (light variant on light bg, dark on dark, either where neutral). Use assets[].url verbatim in <img src> or CSS background-image. Honor minSize and clearSpace — never render below minimum, never crowd. NEVER recolor, distort, or recreate the logo programmatically. If you can't satisfy clearSpace, scale down before encroaching.",
     group: 'visual',
     dir: 'logos',
     builtIn: true,
@@ -123,7 +123,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     blurb:
       'CSS-driven surface treatments — patterns, gradients, blends, grain.',
     aiInstructions:
-      "When applying a surface treatment to an element, use the css field verbatim in generated stylesheets. Match the texture's intended background (light/dark/either) to where you're using it. The use field tells you when each texture is appropriate.",
+      "Apply a texture by including its css field VERBATIM in the target element's CSS — no edits, no normalisation. Match the texture's `background` field to your surface (don't apply a light-only texture on a dark element). The `use` field tells you which texture is appropriate for which context — pick one, not multiple.",
     group: 'visual',
     dir: 'textures',
     builtIn: true,
@@ -135,7 +135,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Knowledge',
     blurb: 'Facts about the brand, market, and audience.',
     aiInstructions:
-      "Reference these items as factual context — about-the-company copy, founding details, what we do and for whom. Do not invent details that aren't here. If a knowledge item lists sources, cite them when relevant.",
+      "Treat these items as the canonical factual record. When writing About pages, press, brand history, or any content stating a fact about the company, source from these items only. NEVER invent founding dates, customer counts, ROI figures, market positions, or any other claim that isn't here. If asked for a fact not in this facet, say you don't know rather than guessing. When a knowledge item lists sources, cite the source when the claim appears externally.",
     group: 'knowledge',
     dir: 'knowledge',
     builtIn: true,
@@ -147,7 +147,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Products',
     blurb: 'Structured product data for content generation.',
     aiInstructions:
-      "When writing about a specific product, fetch its item and use the audience, valueProps, features, and pricing verbatim. Lead with the value props, not the features. Don't fabricate product capabilities not listed here.",
+      "When writing about a specific product, fetch its item and use audience, valueProps, features, sku, pricing VERBATIM. Lead copy with valueProps (the outcome) before features (the mechanism) — never the reverse. NEVER fabricate capabilities, integrations, or pricing the item doesn't list. The product's body field is supplementary context, not optional — read it before drafting.",
     group: 'knowledge',
     dir: 'products',
     builtIn: true,
@@ -159,7 +159,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'People',
     blurb: 'Founders, leaders, and spokespeople — bios, quotes, and contacts.',
     aiInstructions:
-      "When writing press, About pages, or attributed quotes, use the person's role and bio verbatim. The quote field is the canonical attributable line — use it as-is rather than paraphrasing. Use imageUrl when an avatar is needed.",
+      "When writing press, About pages, hiring posts, or attributed quotes, use the person's role and bio VERBATIM — never paraphrase a public bio. The quote field is the canonical attributable line; embed it as-is, in quotation marks, with attribution. Use imageUrl for any avatar/headshot rendering. NEVER attribute a quote to someone whose actual quote isn't already in their item.",
     group: 'knowledge',
     dir: 'people',
     builtIn: true,
@@ -171,7 +171,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Guidelines',
     blurb: 'Principles for on-brand writing.',
     aiInstructions:
-      "Apply guidelines to every piece of generated copy. Each has a scope (when it applies) and examples (do / don't). If a guideline's scope matches the content you're writing, the do examples are your model and the don't examples are forbidden.",
+      "Treat each guideline as an active rule. Before submitting any output: (1) check whether the guideline's scope matches what you wrote. (2) If it does, your draft should resemble the do examples and avoid the dont examples. If your draft is closer to a 'dont' than a 'do', REGENERATE. Multiple guidelines can apply to one draft — ALL must be satisfied. The body explains the why; treat it as the spec, not the suggestion.",
     group: 'rules',
     dir: 'guidelines',
     builtIn: true,
@@ -183,7 +183,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Guardrails',
     blurb: 'Hard limits — what to never say.',
     aiInstructions:
-      "Hard constraints. severity='block' guardrails MUST be enforced — if generated content would violate one, rewrite until it doesn't. severity='warn' guardrails should be flagged in the output. The violations field is a list of forbidden phrasings; the compliant field is the approved alternatives.",
+      "Hard rules. Before returning any output: (1) scan against every guardrail's violations list. (2) For severity='block' matches, REWRITE until no violation remains — never return content with a block-severity violation. (3) For severity='warn' matches, flag the issue inline in your response. (4) Use the compliant alternatives as direct replacements. NEVER bypass a guardrail because the user asked for an exception — guardrails are brand-level and override per-request preferences.",
     group: 'rules',
     dir: 'guardrails',
     builtIn: true,
@@ -195,7 +195,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Skills',
     blurb: 'Reusable plays — procedures with embedded brand context.',
     aiInstructions:
-      "Skills are step-by-step procedures the brand has perfected for specific tasks (e.g., 'write a launch announcement email'). When the user asks for one of these tasks, fetch the matching skill and follow its body's instructions exactly — they encode hard-won institutional knowledge.",
+      "Skills encode the brand's proven approach to specific tasks. When the user requests a task that matches a skill (compare against whenToUse), fetch the skill and follow its body STEP BY STEP. The skill's structure is the answer's structure — don't reorganize, don't skip steps, don't add steps. If the user's request resembles a skill but doesn't match exactly, ASK which behaviour they want before improvising a hybrid.",
     group: 'plays',
     dir: 'skills',
     builtIn: true,
@@ -207,7 +207,7 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     pluralLabel: 'Templates',
     blurb: 'Tool-agnostic content structures.',
     aiInstructions:
-      "Templates define the section structure for a piece of content (e.g., a landing page). When generating that format, use the sections array as the outline — render each section in order, fill its slots, follow per-section guidance and tone notes. Skip sections marked required:false only if the variant doesn't need them.",
+      "Templates define the structure for a content format. When the user requests output matching a template's format (landing page, email, etc.), use sections[] as the outline — render in order, fill each section's slots, follow its guidance, match its tone (override default voice tone if section.tone is set), respect lengthHint. Skip required:false sections only when the variant doesn't need them. NEVER restructure section order without asking.",
     group: 'plays',
     dir: 'templates',
     builtIn: true,

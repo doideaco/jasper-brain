@@ -33,7 +33,7 @@ const PRESETS: Preset[] = [
     blurb:
       'Required regulatory text for specific contexts — financial, medical, legal.',
     aiInstructions:
-      "When generating any copy that makes claims falling under a disclaimer's scope (financial returns, medical efficacy, legal advice, etc.), append the matching disclaimer item verbatim at the end of the output. Never paraphrase a compliance disclaimer.",
+      "When the user's draft makes a claim falling under any disclaimer's scope (read each item's name and description), append the matching disclaimer item VERBATIM at the END of the output, set apart visually (e.g., a smaller font block or a horizontal rule above). NEVER paraphrase, abridge, or rewrite a compliance disclaimer — the wording is legally fixed. Apply ALL matching disclaimers, not just the closest one.",
     group: 'rules',
   },
   {
@@ -43,7 +43,7 @@ const PRESETS: Preset[] = [
     blurb:
       'Concrete evidence — case studies, customer quotes, sourced statistics — pre-approved for use in copy.',
     aiInstructions:
-      "Use these items as supporting evidence in marketing copy, sales decks, and press materials. Quote them verbatim with their attribution. Don't invent statistics or customer names.",
+      "When making a claim about traction, customer outcomes, or market position in marketing copy, sales materials, or press, source the supporting evidence from this facet ONLY. Quote items verbatim with their attribution exactly as stored. NEVER invent statistics, customer names, or success metrics. If a claim needs a number and no proof point supports it, REWRITE the claim to remove the number.",
     group: 'knowledge',
   },
   {
@@ -53,7 +53,7 @@ const PRESETS: Preset[] = [
     blurb:
       'Pre-written replies to common buyer objections, ready for sales, support, and outbound.',
     aiInstructions:
-      "When the user is writing sales copy, FAQ pages, or replying to a buyer concern, look for the matching objection in this facet and use its response as your model. The body of each item is the recommended response framing.",
+      "When the user asks you to handle a buyer's concern (sales copy, FAQ entry, outbound reply, support response), match the concern against each item's name/description and use the closest item's body VERBATIM as your reply. Don't paraphrase, soften, or rewrite — these are tested responses. Replace any [bracketed placeholders] with the user's specifics. If no item matches the concern with reasonable similarity, list the available items by name and ask the user which is closest — NEVER invent a response that isn't in this facet.",
     group: 'plays',
   },
   {
@@ -62,7 +62,7 @@ const PRESETS: Preset[] = [
     pluralLabel: 'Press quotes',
     blurb: 'Pre-approved quotes from leadership, ready to embed in press releases.',
     aiInstructions:
-      "When drafting press releases, blog announcements, or third-party briefings, embed quotes from this facet verbatim. Always include the speaker's name and role from the item's metadata.",
+      "When drafting press releases, official announcements, or third-party briefings, embed quotes from this facet VERBATIM — don't paraphrase, don't shorten, don't combine. Always include the speaker's full name and role from the item's metadata. NEVER attribute a quote to a person whose actual quote isn't here, and NEVER fabricate quotes.",
     group: 'knowledge',
   },
 ];
@@ -171,7 +171,7 @@ export function NewFacetForm({
           key={`blurb-${blurb}`}
         />
 
-        <div className="space-y-1">
+        <div className="space-y-2">
           <label className="text-sm font-medium text-stone-800">
             Instructions for AI tools
           </label>
@@ -179,14 +179,44 @@ export function NewFacetForm({
             name="aiInstructions"
             value={aiInstructions}
             onChange={(e) => setAiInstructions(e.target.value)}
-            rows={5}
-            placeholder='e.g. "When generating any copy that mentions financial returns, append the matching disclaimer item verbatim at the end of the output."'
+            rows={6}
+            placeholder='e.g. "When the user asks you to handle a buyer concern, match it to an item and use the body VERBATIM as your reply. Don\'t paraphrase. If no item matches reasonably, list the items and ask which is closest — never invent a response."'
             className="block w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-700"
           />
+          <details className="rounded border border-stone-200 bg-stone-50 px-3 py-2">
+            <summary className="cursor-pointer text-xs text-stone-600 font-medium">
+              What makes effective AI instructions?
+            </summary>
+            <ul className="text-xs text-stone-600 mt-2 space-y-1 leading-relaxed">
+              <li>
+                <strong>Trigger:</strong> name the exact situation that should
+                make the AI reach for this facet ("when writing X", "when the
+                user asks for Y").
+              </li>
+              <li>
+                <strong>Action:</strong> use imperative verbs — "use", "apply",
+                "append", "embed", "rewrite". Specify <em>verbatim</em> when the
+                AI should not paraphrase.
+              </li>
+              <li>
+                <strong>Constraints:</strong> spell out hard limits with NEVER
+                or MUST. Vague instructions get vague behaviour.
+              </li>
+              <li>
+                <strong>Fallback:</strong> tell the AI what to do when no item
+                matches — "ask the user", "say you don't know", "skip the
+                claim". Otherwise it'll improvise.
+              </li>
+              <li>
+                <strong>Verify:</strong> end with what to check before
+                returning — "scan for forbidden phrases", "confirm all
+                placeholders are filled".
+              </li>
+            </ul>
+          </details>
           <p className="text-xs text-stone-500">
-            This is the leverage point. Tells AI tools when to reach for this
-            facet, how to apply items from it, and any rules they must follow.
-            Travels through every MCP response.
+            This text travels through every MCP response. Weak language gets
+            weak AI behaviour — be directive.
           </p>
         </div>
 
