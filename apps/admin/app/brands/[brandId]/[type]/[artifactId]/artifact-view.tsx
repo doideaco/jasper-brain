@@ -1,4 +1,8 @@
-import type { Artifact } from '@jasper-brain/core';
+import type {
+  Artifact,
+  Typeface,
+  TypeScaleStep,
+} from '@jasper-brain/core';
 
 export function ArtifactView({ artifact }: { artifact: Artifact }) {
   return (
@@ -355,6 +359,14 @@ function renderTypeSpecific(artifact: Artifact) {
               </div>
             </Section>
           )}
+          {artifact.scale.length > 0 && artifact.typefaces.length > 0 && (
+            <Section title="Live preview">
+              <TypeStackPreview
+                steps={artifact.scale}
+                typefaces={artifact.typefaces}
+              />
+            </Section>
+          )}
         </>
       );
     case 'palette':
@@ -608,6 +620,119 @@ function Pills({ items }: { items: string[] }) {
           {item}
         </span>
       ))}
+    </div>
+  );
+}
+
+function typefaceForStep(
+  step: TypeScaleStep,
+  typefaces: Typeface[],
+): Typeface | undefined {
+  if (typefaces.length === 0) return undefined;
+  const name = step.name.toLowerCase();
+  const find = (predicate: (tf: Typeface) => boolean) =>
+    typefaces.find(predicate);
+  if (/mono|code/.test(name)) {
+    const m = find((tf) => /mono/i.test(tf.role));
+    if (m) return m;
+  }
+  if (/display|h1|h2|h3|hero/.test(name)) {
+    const d = find((tf) => /display/i.test(tf.role));
+    if (d) return d;
+  }
+  return (
+    find((tf) => /primary/i.test(tf.role)) ??
+    find((tf) => /body|text/i.test(tf.role)) ??
+    typefaces[0]
+  );
+}
+
+function previewCssFor(tf: Typeface): string {
+  const css = tf.source?.cssImport ?? '';
+  if (!css) return '';
+  const linkMatch = css.match(/<link[^>]+href=['"]([^'"]+)['"]/i);
+  if (linkMatch) return `@import url('${linkMatch[1]}');`;
+  return css;
+}
+
+function sampleFor(stepName: string): string {
+  const n = stepName.toLowerCase();
+  if (n === 'display' || n.includes('hero')) {
+    return 'Brand for the AI era.';
+  }
+  if (n === 'h1' || n === 'h2' || n === 'h3') {
+    return 'Content that ships';
+  }
+  if (n.includes('caption') || n.includes('eyebrow') || n.includes('label')) {
+    return 'EYEBROW · METADATA';
+  }
+  if (n.includes('mono') || n.includes('code')) {
+    return 'const brand = new Brain()';
+  }
+  return 'The quick brown fox jumps over the lazy dog.';
+}
+
+function TypeStackPreview({
+  steps,
+  typefaces,
+}: {
+  steps: TypeScaleStep[];
+  typefaces: Typeface[];
+}) {
+  const combinedCss = typefaces
+    .map((tf) => previewCssFor(tf))
+    .filter(Boolean)
+    .join('\n\n');
+
+  return (
+    <div className="rounded-lg border border-stone-200 bg-white overflow-hidden">
+      {combinedCss && (
+        <style dangerouslySetInnerHTML={{ __html: combinedCss }} />
+      )}
+      <ul className="divide-y divide-stone-100">
+        {steps.map((step, idx) => {
+          const tf = typefaceForStep(step, typefaces);
+          const family = tf
+            ? /\s/.test(tf.family)
+              ? `'${tf.family}'`
+              : tf.family
+            : 'inherit';
+          const sample = sampleFor(step.name);
+          return (
+            <li key={`${step.name}-${idx}`} className="px-5 py-4">
+              <div className="flex items-baseline gap-3 mb-1.5 text-[10px] uppercase tracking-wide text-stone-400 font-mono">
+                <span className="w-16 text-stone-500 font-semibold">
+                  {step.name}
+                </span>
+                <span>
+                  {step.fontSize}
+                  {step.lineHeight && ` · ${step.lineHeight}`}
+                  {step.fontWeight && ` · ${step.fontWeight}`}
+                  {step.letterSpacing && ` · ${step.letterSpacing}`}
+                  {tf && (
+                    <span className="text-stone-400">
+                      {' · '}
+                      {tf.family}
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div
+                style={{
+                  fontFamily: family,
+                  fontSize: step.fontSize,
+                  lineHeight: step.lineHeight ?? undefined,
+                  fontWeight: step.fontWeight ?? undefined,
+                  letterSpacing: step.letterSpacing ?? undefined,
+                }}
+                className="text-stone-900 break-words"
+              >
+                {sample}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
