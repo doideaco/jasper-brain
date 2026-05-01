@@ -1,9 +1,10 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { stringify as stringifyYaml } from 'yaml';
 import type { Typeface } from '@jasper-brain/core';
 import type { UploadedAsset } from '@/lib/blob';
+import { AssetField } from './asset-field';
 
 const PROVIDERS = [
   { value: '', label: '— pick provider —' },
@@ -128,8 +129,6 @@ export function TypefacesEditor({
       ? defaultValue.map(toDraft)
       : [{ ...DEFAULT_TYPEFACE }],
   );
-  const datalistId = useId();
-
   const update = (idx: number, patch: Partial<DraftTypeface>) => {
     setDrafts((prev) =>
       prev.map((d, i) => (i === idx ? { ...d, ...patch } : d)),
@@ -305,65 +304,67 @@ export function TypefacesEditor({
                     {draft.files.map((file, fIdx) => (
                       <li
                         key={fIdx}
-                        className="grid grid-cols-[5rem_6rem_1fr_5rem_auto] gap-2"
+                        className="rounded border border-stone-100 bg-stone-50/50 p-2 space-y-2"
                       >
-                        <input
-                          type="text"
-                          value={file.weight}
-                          onChange={(e) =>
-                            updateFile(idx, fIdx, { weight: e.target.value })
-                          }
-                          placeholder="weight"
-                          className={inputBase}
-                          aria-label="Font weight"
-                        />
-                        <select
-                          value={file.style}
-                          onChange={(e) =>
-                            updateFile(idx, fIdx, {
-                              style: e.target.value as 'normal' | 'italic',
-                            })
-                          }
-                          className={inputBase}
-                          aria-label="Style"
-                        >
-                          <option value="normal">normal</option>
-                          <option value="italic">italic</option>
-                        </select>
-                        <input
-                          type="text"
+                        <div className="grid grid-cols-[5rem_7rem_5rem_auto] gap-2">
+                          <input
+                            type="text"
+                            value={file.weight}
+                            onChange={(e) =>
+                              updateFile(idx, fIdx, { weight: e.target.value })
+                            }
+                            placeholder="weight"
+                            className={inputBase}
+                            aria-label="Font weight"
+                          />
+                          <select
+                            value={file.style}
+                            onChange={(e) =>
+                              updateFile(idx, fIdx, {
+                                style: e.target.value as 'normal' | 'italic',
+                              })
+                            }
+                            className={inputBase}
+                            aria-label="Style"
+                          >
+                            <option value="normal">normal</option>
+                            <option value="italic">italic</option>
+                          </select>
+                          <select
+                            value={file.format}
+                            onChange={(e) =>
+                              updateFile(idx, fIdx, {
+                                format: e.target.value,
+                              })
+                            }
+                            className={inputBase}
+                            aria-label="File format"
+                          >
+                            <option value="">—</option>
+                            {FONT_FORMATS.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => removeFile(idx, fIdx)}
+                            className="text-xs text-red-700 hover:text-red-900 px-1"
+                            aria-label="Remove file"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <AssetField
                           value={file.url}
-                          onChange={(e) =>
-                            updateFile(idx, fIdx, { url: e.target.value })
+                          onChange={(next) =>
+                            updateFile(idx, fIdx, { url: next })
                           }
-                          list={datalistId}
-                          placeholder="font file URL — pick from uploads"
-                          className={`${inputBase} font-mono text-xs`}
-                          aria-label="Font file URL"
+                          assets={uploadedAssets}
+                          accept="font"
+                          placeholder="Font file URL"
                         />
-                        <select
-                          value={file.format}
-                          onChange={(e) =>
-                            updateFile(idx, fIdx, { format: e.target.value })
-                          }
-                          className={inputBase}
-                          aria-label="File format"
-                        >
-                          <option value="">—</option>
-                          {FONT_FORMATS.map((f) => (
-                            <option key={f} value={f}>
-                              {f}
-                            </option>
-                          ))}
-                        </select>
-                        <button
-                          type="button"
-                          onClick={() => removeFile(idx, fIdx)}
-                          className="text-xs text-red-700 hover:text-red-900 px-1"
-                          aria-label="Remove file"
-                        >
-                          ✕
-                        </button>
                       </li>
                     ))}
                   </ul>
@@ -397,21 +398,6 @@ export function TypefacesEditor({
       >
         + Add another typeface
       </button>
-
-      <datalist id={datalistId}>
-        {uploadedAssets.map((asset) => {
-          const fileName = asset.pathname.split('/').pop() ?? asset.pathname;
-          const fullUrl =
-            asset.url.startsWith('http') || typeof window === 'undefined'
-              ? asset.url
-              : `${window.location.origin}${asset.url}`;
-          return (
-            <option key={asset.pathname} value={fullUrl}>
-              {fileName}
-            </option>
-          );
-        })}
-      </datalist>
 
       <input type="hidden" name="typefaces" value={serialize(drafts)} />
     </div>

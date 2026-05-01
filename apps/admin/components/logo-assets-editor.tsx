@@ -1,9 +1,10 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useState } from 'react';
 import { stringify as stringifyYaml } from 'yaml';
 import type { LogoAsset } from '@jasper-brain/core';
 import type { UploadedAsset } from '@/lib/blob';
+import { AssetField } from './asset-field';
 
 interface DraftAsset {
   variant: string;
@@ -61,7 +62,6 @@ export function LogoAssetsEditor({
       ? defaultValue.map(toDraft)
       : [{ ...DEFAULT_DRAFT }],
   );
-  const datalistId = useId();
 
   const update = (idx: number, patch: Partial<DraftAsset>) => {
     setDrafts((prev) =>
@@ -125,14 +125,12 @@ export function LogoAssetsEditor({
               </button>
             </div>
 
-            <input
-              type="text"
+            <AssetField
               value={draft.url}
-              onChange={(e) => update(idx, { url: e.target.value })}
-              placeholder="URL — start typing to pick from uploaded assets"
-              className={`${inputBase} w-full font-mono text-xs`}
-              list={datalistId}
-              aria-label="Asset URL"
+              onChange={(next) => update(idx, { url: next })}
+              assets={uploadedAssets}
+              accept="image"
+              placeholder="URL — paste, or click Browse"
             />
 
             <div className="grid grid-cols-[1fr_8rem] gap-2">
@@ -171,22 +169,6 @@ export function LogoAssetsEditor({
       >
         + Add another asset
       </button>
-
-      <datalist id={datalistId}>
-        {uploadedAssets.map((asset) => {
-          const fileName = asset.pathname.split('/').pop() ?? asset.pathname;
-          const fullUrl = asset.url.startsWith('http')
-            ? asset.url
-            : typeof window === 'undefined'
-              ? asset.url
-              : `${window.location.origin}${asset.url}`;
-          return (
-            <option key={asset.pathname} value={fullUrl}>
-              {fileName}
-            </option>
-          );
-        })}
-      </datalist>
 
       <input type="hidden" name="assets" value={serialize(drafts)} />
     </div>

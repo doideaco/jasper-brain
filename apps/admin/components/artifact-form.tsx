@@ -12,9 +12,9 @@ import {
   TagsField,
   TextArea,
   TextField,
-  UrlPickerField,
   YamlField,
 } from './fields';
+import { AssetField } from './asset-field';
 import { LogoAssetsEditor } from './logo-assets-editor';
 import { TypeScaleEditor } from './type-scale-editor';
 import { TypefacesEditor } from './typefaces-editor';
@@ -26,21 +26,6 @@ interface Props {
   facet: FacetDefinition;
   artifact?: Artifact;
   uploadedAssets?: UploadedAsset[];
-}
-
-function assetOptions(uploaded: UploadedAsset[] | undefined): Array<{
-  value: string;
-  label: string;
-}> {
-  if (!uploaded || uploaded.length === 0) return [];
-  return uploaded.map((asset) => {
-    const fileName = asset.pathname.split('/').pop() ?? asset.pathname;
-    const fullUrl =
-      asset.url.startsWith('http') || typeof window === 'undefined'
-        ? asset.url
-        : `${window.location.origin}${asset.url}`;
-    return { value: fullUrl, label: fileName };
-  });
 }
 
 export function ArtifactForm({
@@ -130,7 +115,6 @@ function TypeSpecificFields({
   uploadedAssets?: UploadedAsset[];
 }) {
   const type = facet.builtIn ? facet.id : 'custom';
-  const urlOptions = assetOptions(uploadedAssets);
 
   if (type === 'guideline') {
     const a = artifact?.type === 'guideline' ? artifact : undefined;
@@ -353,12 +337,13 @@ function TypeSpecificFields({
           defaultValue={a?.quote}
         />
         <TextField name="email" label="Email" defaultValue={a?.email} />
-        <UrlPickerField
+        <AssetField
           name="imageUrl"
-          label="Image URL"
+          label="Image"
           hint="Pick a headshot from uploaded assets, or paste any public URL."
           defaultValue={a?.imageUrl}
-          options={urlOptions}
+          assets={uploadedAssets ?? []}
+          accept="image"
         />
         <YamlField
           name="social"
