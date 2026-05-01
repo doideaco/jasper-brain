@@ -156,15 +156,18 @@ export function blobBackend(): 'vercel' | 'local-fs' {
 
 /**
  * For Vercel Blob private mode: resolve a stable pathname to a fresh
- * download URL valid for ~30 days. Returns null if the blob can't be
- * found.
+ * download URL. Uses list() with an exact prefix match so the API
+ * accepts a pathname (head() requires the full blob URL). Returns null
+ * if the blob can't be found.
  */
 export async function signedBlobUrl(pathname: string): Promise<string | null> {
   if (!useVercelBlob) return null;
-  const { head } = await import('@vercel/blob');
+  const { list } = await import('@vercel/blob');
   try {
-    const meta = await head(pathname);
-    return meta.downloadUrl ?? meta.url ?? null;
+    const { blobs } = await list({ prefix: pathname, limit: 1 });
+    const match = blobs.find((b) => b.pathname === pathname);
+    if (!match) return null;
+    return match.downloadUrl ?? match.url ?? null;
   } catch {
     return null;
   }
