@@ -21,16 +21,23 @@ export async function GET(
     return new NextResponse('Not found', { status: 404 });
   }
 
-  // Vercel Blob (private) mode — proxy URL is /api/files/<full-blob-pathname>.
-  // Resolve the pathname to a fresh signed URL and 302 to it.
+  // Vercel Blob (private) mode — fetch the blob server-side using the
+  // env-injected BLOB_READ_WRITE_TOKEN and stream the bytes back. Avoids
+  // signed-URL redirect quirks (expiry, CORS, image-load edge cases).
   if (blobBackend() === 'vercel') {
     const blobPath = parts.join('/');
     const fresh = await signedBlobUrl(blobPath);
     if (!fresh) return new NextResponse('Not found', { status: 404 });
-    return NextResponse.redirect(fresh, {
-      status: 302,
+    const upstream = await fetch(fresh);
+    if (!upstream.ok || !upstream.body) {
+      return new NextResponse('Upstream error', { status: 502 });
+    }
+    return new NextResponse(upstream.body, {
+      status: 200,
       headers: {
-        'cache-control': 'public, max-age=300',
+        'content-type':
+          upstream.headers.get('content-type') ?? detectMime(blobPath),
+        'cache-control': 'public, max-age=3600',
       },
     });
   }
