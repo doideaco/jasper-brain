@@ -48,7 +48,8 @@ export async function createCustomFacet(
   }
 
   revalidatePath(`/brands/${brandId}`);
-  redirect(`/brands/${brandId}#${facetId}`);
+  // Land on the new facet's empty list — the natural next move is "+ New item".
+  redirect(`/brands/${brandId}/${facetId}`);
 }
 
 export async function deleteCustomFacet(formData: FormData): Promise<void> {
