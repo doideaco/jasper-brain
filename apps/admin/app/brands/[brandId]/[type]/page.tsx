@@ -48,6 +48,25 @@ export default async function FacetListPage({
         </Link>
       </header>
 
+      {facet.aiInstructions && (
+        <details className="mb-6 rounded-lg border border-stone-200 bg-white">
+          <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xs uppercase tracking-wide text-stone-500 font-semibold">
+                Instructions for AI tools
+              </span>
+              <span className="text-[10px] tracking-wider bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded">
+                surfaced over MCP
+              </span>
+            </div>
+            <span className="text-xs text-stone-400">expand</span>
+          </summary>
+          <div className="px-4 pb-3 text-sm text-stone-700 leading-relaxed border-t border-stone-100 pt-3">
+            {facet.aiInstructions}
+          </div>
+        </details>
+      )}
+
       {items.length === 0 ? (
         <div className="rounded border border-dashed border-stone-300 p-12 text-center">
           <p className="text-stone-600 font-medium">

@@ -105,6 +105,7 @@ export async function importFromFilesystem(
           label: facet.label,
           pluralLabel: facet.pluralLabel,
           blurb: facet.blurb,
+          aiInstructions: facet.aiInstructions,
           group: facet.group,
         };
         try {

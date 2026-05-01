@@ -1,3 +1,4 @@
+import type { FacetDefinition } from './facets.js';
 import type { BrainStore } from './storage.js';
 import type {
   Artifact,
@@ -27,8 +28,22 @@ export interface BrandKitTemplateSummary extends BrandKitItemSummary {
   format: string;
 }
 
+export interface FacetInstruction {
+  id: string;
+  label: string;
+  group: string;
+  /** Behavioural instructions — how the AI should use items in this facet. */
+  aiInstructions: string;
+}
+
 export interface BrandKit {
   brand: Brand;
+  /**
+   * Per-facet behavioural instructions for the AI. Read these first —
+   * they describe what each facet is and how to use it. Custom facets
+   * carry their own brand-defined instructions.
+   */
+  instructions: FacetInstruction[];
   voice?: Voice;
   values: Value[];
   visual: {
@@ -74,7 +89,19 @@ export async function getBrandKit(
   brandId: string,
 ): Promise<BrandKit> {
   const brand = await store.getBrand(brandId);
-  const items = await store.listArtifacts(brandId);
+  const [items, facets] = await Promise.all([
+    store.listArtifacts(brandId),
+    store.listFacets(brandId),
+  ]);
+
+  const instructions: FacetInstruction[] = facets
+    .filter((f) => f.aiInstructions && f.aiInstructions.trim())
+    .map((f) => ({
+      id: f.id,
+      label: f.pluralLabel,
+      group: f.group,
+      aiInstructions: f.aiInstructions,
+    }));
 
   const voices = items.filter((i): i is Voice => i.type === 'voice');
   const voice = brand.primaryVoiceId
@@ -100,6 +127,7 @@ export async function getBrandKit(
 
   return {
     brand,
+    instructions,
     voice,
     values,
     visual: { typography, palette, logo },

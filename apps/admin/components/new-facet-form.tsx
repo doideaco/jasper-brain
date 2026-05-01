@@ -21,6 +21,7 @@ interface Preset {
   label: string;
   pluralLabel: string;
   blurb: string;
+  aiInstructions: string;
   group: string;
 }
 
@@ -31,6 +32,8 @@ const PRESETS: Preset[] = [
     pluralLabel: 'Compliance disclaimers',
     blurb:
       'Required regulatory text for specific contexts — financial, medical, legal.',
+    aiInstructions:
+      "When generating any copy that makes claims falling under a disclaimer's scope (financial returns, medical efficacy, legal advice, etc.), append the matching disclaimer item verbatim at the end of the output. Never paraphrase a compliance disclaimer.",
     group: 'rules',
   },
   {
@@ -39,6 +42,8 @@ const PRESETS: Preset[] = [
     pluralLabel: 'Proof points',
     blurb:
       'Concrete evidence — case studies, customer quotes, sourced statistics — pre-approved for use in copy.',
+    aiInstructions:
+      "Use these items as supporting evidence in marketing copy, sales decks, and press materials. Quote them verbatim with their attribution. Don't invent statistics or customer names.",
     group: 'knowledge',
   },
   {
@@ -47,6 +52,8 @@ const PRESETS: Preset[] = [
     pluralLabel: 'Objection responses',
     blurb:
       'Pre-written replies to common buyer objections, ready for sales, support, and outbound.',
+    aiInstructions:
+      "When the user is writing sales copy, FAQ pages, or replying to a buyer concern, look for the matching objection in this facet and use its response as your model. The body of each item is the recommended response framing.",
     group: 'plays',
   },
   {
@@ -54,6 +61,8 @@ const PRESETS: Preset[] = [
     label: 'Press quote',
     pluralLabel: 'Press quotes',
     blurb: 'Pre-approved quotes from leadership, ready to embed in press releases.',
+    aiInstructions:
+      "When drafting press releases, blog announcements, or third-party briefings, embed quotes from this facet verbatim. Always include the speaker's name and role from the item's metadata.",
     group: 'knowledge',
   },
 ];
@@ -76,6 +85,7 @@ export function NewFacetForm({
   const [id, setId] = useState('');
   const [idTouched, setIdTouched] = useState(false);
   const [blurb, setBlurb] = useState('');
+  const [aiInstructions, setAiInstructions] = useState('');
   const [group, setGroup] = useState('custom');
 
   // Keep the id in sync with the label until the user manually edits it.
@@ -93,6 +103,7 @@ export function NewFacetForm({
     setId(p.id);
     setIdTouched(false);
     setBlurb(p.blurb);
+    setAiInstructions(p.aiInstructions);
     setGroup(p.group);
   };
 
@@ -154,11 +165,30 @@ export function NewFacetForm({
           name="blurb"
           label="Description"
           rows={2}
-          placeholder="One-line description of what this facet holds and when to use it."
-          hint="Surfaces in MCP — AI tools see this when discovering facets, so make it descriptive."
+          placeholder="One-line description of what this facet holds."
+          hint="Shown in the UI and to AI tools as a one-liner."
           defaultValue={blurb}
           key={`blurb-${blurb}`}
         />
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-stone-800">
+            Instructions for AI tools
+          </label>
+          <textarea
+            name="aiInstructions"
+            value={aiInstructions}
+            onChange={(e) => setAiInstructions(e.target.value)}
+            rows={5}
+            placeholder='e.g. "When generating any copy that mentions financial returns, append the matching disclaimer item verbatim at the end of the output."'
+            className="block w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-700"
+          />
+          <p className="text-xs text-stone-500">
+            This is the leverage point. Tells AI tools when to reach for this
+            facet, how to apply items from it, and any rules they must follow.
+            Travels through every MCP response.
+          </p>
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-stone-800">Group</label>

@@ -34,6 +34,7 @@ export async function createCustomFacet(
       label: requireString(formData, 'label'),
       pluralLabel: getString(formData, 'pluralLabel'),
       blurb: getString(formData, 'blurb') ?? '',
+      aiInstructions: getString(formData, 'aiInstructions') ?? '',
       group: groupRaw,
     });
     if (isBuiltInFacet(facet.id)) {
