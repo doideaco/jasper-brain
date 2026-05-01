@@ -4,6 +4,11 @@ import { useState } from 'react';
 import { stringify as stringifyYaml } from 'yaml';
 import type { Typeface } from '@jasper-brain/core';
 import type { UploadedAsset } from '@/lib/blob';
+import {
+  generateFontFace,
+  parseFontFilename,
+  suggestStack,
+} from '@/lib/font-utils';
 import { AssetField } from './asset-field';
 
 const PROVIDERS = [
@@ -27,10 +32,12 @@ interface DraftTypeface {
   family: string;
   role: string;
   stack: string;
+  stackAuto: boolean;
   weights: string;
   provider: string;
   sourceUrl: string;
   cssImport: string;
+  cssImportAuto: boolean;
   files: DraftFile[];
   use: string;
 }
@@ -46,32 +53,76 @@ const DEFAULT_TYPEFACE: DraftTypeface = {
   family: '',
   role: 'primary',
   stack: '',
+  stackAuto: true,
   weights: '',
   provider: '',
   sourceUrl: '',
   cssImport: '',
+  cssImportAuto: true,
   files: [],
   use: '',
 };
 
 function toDraft(tf: Typeface): DraftTypeface {
+  const files =
+    tf.source?.files?.map((f) => ({
+      weight: String(f.weight),
+      style: f.style,
+      url: f.url,
+      format: f.format ?? '',
+    })) ?? [];
+  const storedStack = tf.stack ?? '';
+  const storedCss = tf.source?.cssImport ?? '';
+  const generatedStack = suggestStack(tf.family, tf.role);
+  const generatedCss = generateFontFace(
+    tf.family,
+    files.map((f) => ({
+      url: f.url,
+      weight: parseInt(f.weight, 10) || 400,
+      style: f.style,
+      format: f.format,
+    })),
+  );
   return {
     family: tf.family,
     role: tf.role,
-    stack: tf.stack ?? '',
+    stack: storedStack,
+    // If the stored stack matches the generated default (or is empty),
+    // keep auto-mode on. Otherwise the user customised it — preserve.
+    stackAuto: !storedStack || storedStack === generatedStack,
     weights: tf.weights.join(', '),
     provider: tf.source?.provider ?? '',
     sourceUrl: tf.source?.url ?? '',
-    cssImport: tf.source?.cssImport ?? '',
-    files:
-      tf.source?.files?.map((f) => ({
-        weight: String(f.weight),
-        style: f.style,
-        url: f.url,
-        format: f.format ?? '',
-      })) ?? [],
+    cssImport: storedCss,
+    cssImportAuto:
+      tf.source?.provider === 'self-hosted'
+        ? !storedCss || storedCss === generatedCss
+        : !storedCss,
+    files,
     use: tf.use ?? '',
   };
+}
+
+function fileForCss(f: DraftFile) {
+  return {
+    url: f.url,
+    weight: parseInt(f.weight, 10) || 400,
+    style: f.style,
+    format: f.format,
+  };
+}
+
+function effectiveStack(d: DraftTypeface): string {
+  if (d.stackAuto) return suggestStack(d.family, d.role);
+  return d.stack;
+}
+
+function effectiveCss(d: DraftTypeface): string {
+  if (!d.cssImportAuto) return d.cssImport;
+  if (d.provider === 'self-hosted') {
+    return generateFontFace(d.family, d.files.map(fileForCss));
+  }
+  return '';
 }
 
 function serialize(drafts: DraftTypeface[]): string {
@@ -80,7 +131,8 @@ function serialize(drafts: DraftTypeface[]): string {
       family: d.family,
       role: d.role,
     };
-    if (d.stack) out.stack = d.stack;
+    const stack = effectiveStack(d);
+    if (stack) out.stack = stack;
 
     const weights = d.weights
       .split(',')
@@ -91,7 +143,8 @@ function serialize(drafts: DraftTypeface[]): string {
     const source: Record<string, unknown> = {};
     if (d.provider) source.provider = d.provider;
     if (d.sourceUrl) source.url = d.sourceUrl;
-    if (d.cssImport) source.cssImport = d.cssImport;
+    const css = effectiveCss(d);
+    if (css) source.cssImport = css;
     if (d.provider === 'self-hosted' && d.files.length > 0) {
       source.files = d.files
         .filter((f) => f.url)
@@ -159,6 +212,43 @@ export function TypefacesEditor({
       ),
     );
   };
+
+  /**
+   * When a file URL is picked or pasted, parse the filename and overwrite
+   * weight/style/format from it. If the typeface family is empty, fill it
+   * too — and if no provider was chosen yet, default to self-hosted since
+   * the URL points at an uploaded blob.
+   */
+  const handleFileUrlChange = (
+    typefaceIdx: number,
+    fileIdx: number,
+    url: string,
+  ) => {
+    const filename = url.split('/').pop() ?? '';
+    const parsed = parseFontFilename(filename);
+    setDrafts((prev) =>
+      prev.map((d, i) => {
+        if (i !== typefaceIdx) return d;
+        const old = d.files[fileIdx];
+        const newFile: DraftFile = {
+          weight:
+            parsed.weight !== undefined ? String(parsed.weight) : old.weight,
+          style: parsed.style ?? old.style,
+          format: parsed.format ?? old.format,
+          url,
+        };
+        const family = d.family || parsed.family || '';
+        const provider = d.provider || (url ? 'self-hosted' : '');
+        return {
+          ...d,
+          family,
+          provider,
+          files: d.files.map((f, j) => (j === fileIdx ? newFile : f)),
+        };
+      }),
+    );
+  };
+
   const addFile = (typefaceIdx: number) => {
     setDrafts((prev) =>
       prev.map((d, i) =>
@@ -224,14 +314,40 @@ export function TypefacesEditor({
               />
             </div>
 
-            <input
-              type="text"
-              value={draft.stack}
-              onChange={(e) => update(idx, { stack: e.target.value })}
-              placeholder='CSS stack — e.g. "Inter, ui-sans-serif, system-ui, sans-serif"'
-              className={`${inputBase} w-full font-mono text-xs`}
-              aria-label="CSS stack"
-            />
+            <div className="space-y-1">
+              <div className="flex items-baseline justify-between">
+                <span className="text-xs text-stone-500">CSS stack</span>
+                <label className="text-[11px] text-stone-500 flex items-center gap-1.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={draft.stackAuto}
+                    onChange={(e) =>
+                      update(idx, {
+                        stackAuto: e.target.checked,
+                        // When toggling off, capture the current computed
+                        // value into the stored field so the user has
+                        // something to edit.
+                        stack: e.target.checked
+                          ? draft.stack
+                          : effectiveStack(draft) || draft.stack,
+                      })
+                    }
+                  />
+                  auto
+                </label>
+              </div>
+              <input
+                type="text"
+                value={effectiveStack(draft)}
+                onChange={(e) => update(idx, { stack: e.target.value })}
+                readOnly={draft.stackAuto}
+                placeholder='CSS stack — e.g. "Inter, ui-sans-serif, system-ui, sans-serif"'
+                className={`${inputBase} w-full font-mono text-xs ${
+                  draft.stackAuto ? 'bg-stone-50 text-stone-600' : ''
+                }`}
+                aria-label="CSS stack"
+              />
+            </div>
 
             <input
               type="text"
@@ -273,22 +389,57 @@ export function TypefacesEditor({
                 />
               </div>
 
-              <textarea
-                value={draft.cssImport}
-                onChange={(e) => update(idx, { cssImport: e.target.value })}
-                rows={3}
-                placeholder={
-                  draft.provider === 'self-hosted'
-                    ? 'CSS — your @font-face declarations (auto-suggest based on files below later)'
-                    : draft.provider === 'adobe-fonts'
-                      ? 'CSS — your Typekit <link rel=stylesheet> tag'
-                      : draft.provider === 'google-fonts'
-                        ? "CSS — @import url('https://fonts.googleapis.com/css2?…');"
-                        : 'CSS — anything to drop into a stylesheet'
-                }
-                className={`${inputBase} w-full font-mono text-xs leading-relaxed`}
-                aria-label="CSS import"
-              />
+              <div className="space-y-1">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-xs text-stone-500">CSS</span>
+                  {draft.provider === 'self-hosted' && (
+                    <label className="text-[11px] text-stone-500 flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={draft.cssImportAuto}
+                        onChange={(e) =>
+                          update(idx, {
+                            cssImportAuto: e.target.checked,
+                            cssImport: e.target.checked
+                              ? draft.cssImport
+                              : effectiveCss(draft) || draft.cssImport,
+                          })
+                        }
+                      />
+                      auto-generate @font-face
+                    </label>
+                  )}
+                </div>
+                <textarea
+                  value={effectiveCss(draft)}
+                  onChange={(e) =>
+                    update(idx, { cssImport: e.target.value })
+                  }
+                  readOnly={
+                    draft.cssImportAuto && draft.provider === 'self-hosted'
+                  }
+                  rows={
+                    draft.provider === 'self-hosted'
+                      ? Math.max(3, draft.files.filter((f) => f.url).length * 6)
+                      : 3
+                  }
+                  placeholder={
+                    draft.provider === 'self-hosted'
+                      ? 'Add font files below — @font-face block auto-generates here'
+                      : draft.provider === 'adobe-fonts'
+                        ? 'CSS — your Typekit <link rel=stylesheet> tag'
+                        : draft.provider === 'google-fonts'
+                          ? "CSS — @import url('https://fonts.googleapis.com/css2?…');"
+                          : 'CSS — anything to drop into a stylesheet'
+                  }
+                  className={`${inputBase} w-full font-mono text-xs leading-relaxed ${
+                    draft.cssImportAuto && draft.provider === 'self-hosted'
+                      ? 'bg-stone-50 text-stone-700'
+                      : ''
+                  }`}
+                  aria-label="CSS import"
+                />
+              </div>
 
               {draft.provider === 'self-hosted' && (
                 <div className="space-y-2 border-t border-stone-100 pt-3">
@@ -359,7 +510,7 @@ export function TypefacesEditor({
                         <AssetField
                           value={file.url}
                           onChange={(next) =>
-                            updateFile(idx, fIdx, { url: next })
+                            handleFileUrlChange(idx, fIdx, next)
                           }
                           assets={uploadedAssets}
                           accept="font"
