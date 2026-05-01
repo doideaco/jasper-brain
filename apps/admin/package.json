@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbopack -p 3001",
-    "prebuild": "(cd ../.. && npm run build:libs)",
+    "prebuild": "npm --prefix=../../packages/brain-core run build && npm --prefix=../../packages/brain-mcp run build && npm --prefix=../../packages/brain-store-postgres run build",
     "build": "next build",
     "start": "next start -p 3001",
     "typecheck": "tsc --noEmit"
