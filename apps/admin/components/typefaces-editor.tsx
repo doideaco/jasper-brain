@@ -36,6 +36,35 @@ const PROVIDERS = [
 
 const FONT_FORMATS = ['woff2', 'woff', 'ttf', 'otf'] as const;
 
+const STANDARD_ROLES = [
+  {
+    value: 'primary',
+    label: 'Primary',
+    blurb: 'Body, UI, default — used everywhere unless overridden',
+  },
+  {
+    value: 'display',
+    label: 'Display',
+    blurb: 'Hero, h1, h2, h3 — moments that earn a stronger voice',
+  },
+  {
+    value: 'mono',
+    label: 'Mono',
+    blurb: 'Code, technical labels, ids',
+  },
+  {
+    value: 'secondary',
+    label: 'Secondary',
+    blurb: 'Alternate body — sub-brand, regional, audience variant',
+  },
+] as const;
+
+function roleDescription(role: string): string {
+  const std = STANDARD_ROLES.find((r) => r.value === role.toLowerCase());
+  if (std) return `${std.label} — ${std.blurb}.`;
+  return `Custom role: "${role}".`;
+}
+
 interface DraftFile {
   weight: string;
   style: 'normal' | 'italic';
@@ -260,7 +289,18 @@ export function TypefacesEditor({
     setDrafts((prev) => prev.filter((_, i) => i !== idx));
   };
   const add = () => {
-    setDrafts((prev) => [...prev, { ...DEFAULT_TYPEFACE }]);
+    setDrafts((prev) => {
+      const next = { ...DEFAULT_TYPEFACE };
+      // If the brand already has a primary, default the new one to display.
+      // If display also exists, default to mono. Otherwise leave it primary.
+      const usedRoles = new Set(prev.map((d) => d.role.toLowerCase()));
+      if (usedRoles.has('primary') && !usedRoles.has('display')) {
+        next.role = 'display';
+      } else if (usedRoles.has('primary') && usedRoles.has('display')) {
+        next.role = 'mono';
+      }
+      return [...prev, next];
+    });
   };
 
   const setProvider = (idx: number, provider: string) => {
@@ -558,15 +598,13 @@ function TypefaceCard({
               className={inputBase}
               aria-label="Family"
             />
-            <input
-              type="text"
-              value={draft.role}
-              onChange={(e) => onUpdate({ role: e.target.value })}
-              placeholder='role — e.g. "primary", "display", "mono"'
-              className={inputBase}
-              aria-label="Role"
-            />
+            <RoleField role={draft.role} onChange={(role) => onUpdate({ role })} />
           </div>
+          {draft.role && (
+            <p className="text-xs text-stone-500">
+              {roleDescription(draft.role)}
+            </p>
+          )}
 
           <WeightsField draft={draft} onUpdate={onUpdate} />
         </Section>
@@ -723,6 +761,53 @@ function FilesEditor({
       >
         + Add file
       </button>
+    </div>
+  );
+}
+
+function RoleField({
+  role,
+  onChange,
+}: {
+  role: string;
+  onChange: (value: string) => void;
+}) {
+  const isStandard = STANDARD_ROLES.some(
+    (r) => r.value === role.toLowerCase(),
+  );
+  const selectValue = isStandard ? role.toLowerCase() : '__custom__';
+  return (
+    <div className="space-y-1">
+      <select
+        value={selectValue}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === '__custom__') {
+            onChange(isStandard ? '' : role);
+          } else {
+            onChange(v);
+          }
+        }}
+        className={inputBase}
+        aria-label="Role"
+      >
+        {STANDARD_ROLES.map((r) => (
+          <option key={r.value} value={r.value}>
+            {r.label}
+          </option>
+        ))}
+        <option value="__custom__">Custom…</option>
+      </select>
+      {!isStandard && (
+        <input
+          type="text"
+          value={role}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder='custom role — e.g. "marketing", "regional"'
+          className={`${inputBase} w-full`}
+          aria-label="Custom role"
+        />
+      )}
     </div>
   );
 }
