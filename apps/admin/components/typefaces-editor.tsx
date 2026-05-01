@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { stringify as stringifyYaml } from 'yaml';
-import type { Typeface } from '@jasper-brain/core';
+import type { Typeface, TypefaceFile } from '@jasper-brain/core';
 import type { UploadedAsset } from '@/lib/blob';
 import {
   generateFontFace,
@@ -163,43 +163,62 @@ function toDraft(tf: Typeface): DraftTypeface {
   };
 }
 
-function serialize(drafts: DraftTypeface[]): string {
-  const typefaces = drafts.map((d) => {
+/** Convert a draft typeface to the canonical Typeface shape. */
+export function draftToTypeface(d: DraftTypeface): Typeface {
+  const tf: Typeface = {
+    family: d.family,
+    role: d.role,
+    weights: effectiveWeights(d),
+  };
+  const stack = effectiveStack(d);
+  if (stack) tf.stack = stack;
+  const sourceFiles: TypefaceFile[] =
+    d.provider === 'self-hosted' && d.files.length > 0
+      ? d.files
+          .filter((f) => f.url)
+          .map((f) => {
+            const out: TypefaceFile = {
+              weight: parseInt(f.weight, 10) || 400,
+              style: f.style,
+              url: f.url,
+            };
+            if (f.format) out.format = f.format as TypefaceFile['format'];
+            return out;
+          })
+      : [];
+  const source: NonNullable<Typeface['source']> = { files: sourceFiles };
+  if (d.provider) {
+    source.provider = d.provider as NonNullable<Typeface['source']>['provider'];
+  }
+  if (d.sourceUrl) source.url = d.sourceUrl;
+  const css = effectiveCss(d);
+  if (css) source.cssImport = css;
+  // Only attach the source if it has anything beyond an empty files array
+  const hasSourceContent =
+    !!source.provider ||
+    !!source.url ||
+    !!source.cssImport ||
+    source.files.length > 0;
+  if (hasSourceContent) tf.source = source;
+  if (d.use) tf.use = d.use;
+  return tf;
+}
+
+export function typefacesToYaml(typefaces: Typeface[]): string {
+  if (typefaces.length === 0) return '[]';
+  // Strip undefined keys for cleaner YAML
+  const cleaned = typefaces.map((tf) => {
     const out: Record<string, unknown> = {
-      family: d.family,
-      role: d.role,
+      family: tf.family,
+      role: tf.role,
     };
-    const stack = effectiveStack(d);
-    if (stack) out.stack = stack;
-
-    const weights = effectiveWeights(d);
-    if (weights.length > 0) out.weights = weights;
-
-    const source: Record<string, unknown> = {};
-    if (d.provider) source.provider = d.provider;
-    if (d.sourceUrl) source.url = d.sourceUrl;
-    const css = effectiveCss(d);
-    if (css) source.cssImport = css;
-    if (d.provider === 'self-hosted' && d.files.length > 0) {
-      source.files = d.files
-        .filter((f) => f.url)
-        .map((f) => {
-          const fileObj: Record<string, unknown> = {
-            weight: parseInt(f.weight, 10) || 400,
-            style: f.style,
-            url: f.url,
-          };
-          if (f.format) fileObj.format = f.format;
-          return fileObj;
-        });
-    }
-    if (Object.keys(source).length > 0) out.source = source;
-
-    if (d.use) out.use = d.use;
+    if (tf.stack) out.stack = tf.stack;
+    if (tf.weights.length > 0) out.weights = tf.weights;
+    if (tf.source && Object.keys(tf.source).length > 0) out.source = tf.source;
+    if (tf.use) out.use = tf.use;
     return out;
   });
-  if (typefaces.length === 0) return '[]';
-  return stringifyYaml(typefaces).trimEnd();
+  return stringifyYaml(cleaned).trimEnd();
 }
 
 const inputBase =
@@ -208,15 +227,29 @@ const inputBase =
 export function TypefacesEditor({
   defaultValue,
   uploadedAssets,
+  onChange,
 }: {
   defaultValue?: Typeface[];
   uploadedAssets: UploadedAsset[];
+  onChange?: (typefaces: Typeface[]) => void;
 }) {
   const [drafts, setDrafts] = useState<DraftTypeface[]>(
     defaultValue && defaultValue.length > 0
       ? defaultValue.map(toDraft)
       : [{ ...DEFAULT_TYPEFACE }],
   );
+
+  // Notify parent of typefaces whenever drafts change.
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+    }
+    onChange?.(drafts.map(draftToTypeface));
+    // onChange intentionally omitted from deps — we only want to fire on
+    // draft changes, not when the parent re-renders with a new callback.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drafts]);
 
   const update = (idx: number, patch: Partial<DraftTypeface>) => {
     setDrafts((prev) =>
@@ -353,7 +386,6 @@ export function TypefacesEditor({
         + Add another typeface
       </button>
 
-      <input type="hidden" name="typefaces" value={serialize(drafts)} />
     </div>
   );
 }

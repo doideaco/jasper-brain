@@ -16,8 +16,7 @@ import {
 } from './fields';
 import { AssetField } from './asset-field';
 import { LogoAssetsEditor } from './logo-assets-editor';
-import { TypeScaleEditor } from './type-scale-editor';
-import { TypefacesEditor } from './typefaces-editor';
+import { TypographyEditor } from './typography-editor';
 
 const initial: ActionState = { error: null };
 
@@ -361,15 +360,16 @@ function TypeSpecificFields({
     const a = artifact?.type === 'typography' ? artifact : undefined;
     return (
       <>
-        <TypefacesEditor
-          defaultValue={a?.typefaces}
+        <TypographyEditor
+          defaultTypefaces={a?.typefaces}
+          defaultScale={a?.scale}
           uploadedAssets={uploadedAssets ?? []}
         />
-        <TypeScaleEditor defaultValue={a?.scale} />
         <TextArea
           name="body"
           label="Usage rules"
           rows={5}
+          hint="Markdown notes — pairing rules, when to use display vs body, letter-spacing conventions, etc."
           defaultValue={a?.body}
         />
       </>
