@@ -180,7 +180,7 @@ export function NewFacetForm({
             value={aiInstructions}
             onChange={(e) => setAiInstructions(e.target.value)}
             rows={6}
-            placeholder='e.g. "When the user asks you to handle a buyer concern, match it to an item and use the body VERBATIM as your reply. Don\'t paraphrase. If no item matches reasonably, list the items and ask which is closest — never invent a response."'
+            placeholder="e.g. When the user asks you to handle a buyer concern, match it to an item and use the body VERBATIM as your reply. Replace [placeholders] with specifics. If no item matches reasonably, list the items and ask which is closest — NEVER invent a response."
             className="block w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm shadow-xs focus:border-stone-700 focus:outline-none focus:ring-1 focus:ring-stone-700"
           />
           <details className="rounded border border-stone-200 bg-stone-50 px-3 py-2">
