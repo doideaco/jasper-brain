@@ -11,6 +11,7 @@ import {
   Product,
   Skill,
   Template,
+  Texture,
   Typography,
   Value,
   Voice,
@@ -88,6 +89,8 @@ export function parseArtifact(
       return Palette.parse(merged);
     case 'logo':
       return Logo.parse(merged);
+    case 'texture':
+      return Texture.parse(merged);
     case 'custom': {
       if (!facetId) throw new Error('Custom items must specify a facetId.');
       const known = ['id', 'name', 'description', 'version', 'tags', 'updatedAt'];

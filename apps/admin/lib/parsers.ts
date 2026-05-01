@@ -10,6 +10,7 @@ import {
   Product,
   Skill,
   Template,
+  Texture,
   Typography,
   Value,
   Voice,
@@ -50,6 +51,8 @@ export function parseArtifactForm(facet: FacetDefinition, fd: FormData): Artifac
       return parsePalette(fd);
     case 'logo':
       return parseLogo(fd);
+    case 'texture':
+      return parseTexture(fd);
     default:
       throw new Error(`Unknown built-in facet: ${facet.id}`);
   }
@@ -172,6 +175,18 @@ function parsePalette(fd: FormData): Palette {
     type: 'palette',
     ...baseFields(fd),
     colors: getYaml(fd, 'colors') ?? [],
+    body: getString(fd, 'body'),
+  });
+}
+
+function parseTexture(fd: FormData): Texture {
+  const bg = getString(fd, 'background') ?? 'either';
+  return Texture.parse({
+    type: 'texture',
+    ...baseFields(fd),
+    css: requireString(fd, 'css'),
+    background: bg,
+    use: getString(fd, 'use'),
     body: getString(fd, 'body'),
   });
 }

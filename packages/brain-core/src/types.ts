@@ -13,6 +13,7 @@ export const ARTIFACT_TYPES = [
   'typography',
   'palette',
   'logo',
+  'texture',
   'custom',
 ] as const;
 export type ArtifactType = (typeof ARTIFACT_TYPES)[number];
@@ -244,6 +245,16 @@ export const Logo = z.object({
 });
 export type Logo = z.infer<typeof Logo>;
 
+export const Texture = z.object({
+  type: z.literal('texture'),
+  ...baseArtifactFields,
+  css: z.string(),
+  background: z.enum(['light', 'dark', 'either']).default('either'),
+  use: z.string().optional(),
+  body: z.string().optional(),
+});
+export type Texture = z.infer<typeof Texture>;
+
 export const CustomItem = z.object({
   type: z.literal('custom'),
   facetId: z.string().min(1),
@@ -266,6 +277,7 @@ export const Artifact = z.discriminatedUnion('type', [
   Typography,
   Palette,
   Logo,
+  Texture,
   CustomItem,
 ]);
 export type Artifact = z.infer<typeof Artifact>;
@@ -316,4 +328,5 @@ export const ARTIFACT_DIRS: Record<Exclude<ArtifactType, 'custom'>, string> = {
   typography: 'typography',
   palette: 'palettes',
   logo: 'logos',
+  texture: 'textures',
 };

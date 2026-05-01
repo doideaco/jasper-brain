@@ -100,6 +100,17 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     builtIn: true,
     itemFormat: 'file',
   },
+  texture: {
+    id: 'texture',
+    label: 'Texture',
+    pluralLabel: 'Textures',
+    blurb:
+      'CSS-driven surface treatments — patterns, gradients, blends, grain.',
+    group: 'visual',
+    dir: 'textures',
+    builtIn: true,
+    itemFormat: 'file',
+  },
   knowledge: {
     id: 'knowledge',
     label: 'Knowledge',

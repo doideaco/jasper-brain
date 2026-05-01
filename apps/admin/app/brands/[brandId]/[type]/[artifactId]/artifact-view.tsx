@@ -492,6 +492,27 @@ function renderTypeSpecific(artifact: Artifact) {
           )}
         </>
       );
+    case 'texture':
+      return (
+        <>
+          <Section title="Live preview">
+            <TexturePreviewView
+              css={artifact.css}
+              background={artifact.background}
+            />
+          </Section>
+          <Section title="CSS">
+            <pre className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-xs leading-relaxed font-mono text-stone-800 overflow-x-auto whitespace-pre-wrap">
+              {artifact.css}
+            </pre>
+          </Section>
+          {artifact.use && (
+            <Section title="When to use">
+              <p className="text-stone-700">{artifact.use}</p>
+            </Section>
+          )}
+        </>
+      );
     case 'custom':
       return Object.keys(artifact.data ?? {}).length > 0 ? (
         <Section title="Extra fields">
@@ -735,4 +756,60 @@ function TypeStackPreview({
       </ul>
     </div>
   );
+}
+
+function TexturePreviewView({
+  css,
+  background,
+}: {
+  css: string;
+  background: 'light' | 'dark' | 'either';
+}) {
+  // Hash-style ids — server-rendered, must be deterministic per artifact
+  const lightCls = `texture-light-${hashCss(css)}`;
+  const darkCls = `texture-dark-${hashCss(css)}`;
+  const showLight = background !== 'dark';
+  const showDark = background !== 'light';
+
+  return (
+    <div className="space-y-2">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `.${lightCls} { ${css} }\n.${darkCls} { ${css} }`,
+        }}
+      />
+      <div className="grid grid-cols-2 gap-3">
+        {showLight && (
+          <div
+            className="rounded-lg border border-stone-200 p-3 space-y-2"
+            style={{ backgroundColor: '#fafaf9' }}
+          >
+            <div className="text-[10px] uppercase tracking-wide text-stone-500">
+              On light surface
+            </div>
+            <div className={`${lightCls} h-40 w-full rounded`} />
+          </div>
+        )}
+        {showDark && (
+          <div
+            className="rounded-lg border border-stone-200 p-3 space-y-2"
+            style={{ backgroundColor: '#0c0a09' }}
+          >
+            <div className="text-[10px] uppercase tracking-wide text-stone-300">
+              On dark surface
+            </div>
+            <div className={`${darkCls} h-40 w-full rounded`} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function hashCss(css: string): string {
+  let h = 0;
+  for (let i = 0; i < css.length; i++) {
+    h = (h * 31 + css.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(36);
 }

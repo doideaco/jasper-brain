@@ -16,6 +16,7 @@ import {
 } from './fields';
 import { AssetField } from './asset-field';
 import { LogoAssetsEditor } from './logo-assets-editor';
+import { TextureEditor } from './texture-editor';
 import { TypographyEditor } from './typography-editor';
 
 const initial: ActionState = { error: null };
@@ -425,6 +426,11 @@ function TypeSpecificFields({
         />
       </>
     );
+  }
+
+  if (type === 'texture') {
+    const a = artifact?.type === 'texture' ? artifact : undefined;
+    return <TextureEditor defaultValue={a} />;
   }
 
   if (type === 'custom') {
