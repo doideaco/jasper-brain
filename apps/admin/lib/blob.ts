@@ -68,17 +68,16 @@ export async function uploadFile(
 
   if (useVercelBlob) {
     const { put } = await import('@vercel/blob');
-    const result = await put(
-      `brands/${brandId}/uploads/${safe}`,
-      Buffer.from(bytes),
-      {
-        access: 'public',
-        contentType,
-        addRandomSuffix: false,
-      },
-    );
+    const blobPath = `brands/${brandId}/uploads/${safe}`;
+    const result = await put(blobPath, Buffer.from(bytes), {
+      access: 'private',
+      contentType,
+      addRandomSuffix: false,
+    });
     return {
-      url: result.url,
+      // Stable proxy URL — never changes for a given pathname. /api/files
+      // resolves it to a fresh signed URL on every request.
+      url: `/api/files/${blobPath}`,
       pathname: result.pathname,
       contentType,
       size: bytes.length,
@@ -105,7 +104,7 @@ export async function listFiles(brandId: string): Promise<UploadedAsset[]> {
     const { list } = await import('@vercel/blob');
     const { blobs } = await list({ prefix: `brands/${brandId}/uploads/` });
     return blobs.map((b) => ({
-      url: b.url,
+      url: `/api/files/${b.pathname}`,
       pathname: b.pathname,
       contentType: detectMime(b.pathname),
       size: b.size,
@@ -153,4 +152,20 @@ export async function deleteUpload(
 
 export function blobBackend(): 'vercel' | 'local-fs' {
   return useVercelBlob ? 'vercel' : 'local-fs';
+}
+
+/**
+ * For Vercel Blob private mode: resolve a stable pathname to a fresh
+ * download URL valid for ~30 days. Returns null if the blob can't be
+ * found.
+ */
+export async function signedBlobUrl(pathname: string): Promise<string | null> {
+  if (!useVercelBlob) return null;
+  const { head } = await import('@vercel/blob');
+  try {
+    const meta = await head(pathname);
+    return meta.downloadUrl ?? meta.url ?? null;
+  } catch {
+    return null;
+  }
 }
