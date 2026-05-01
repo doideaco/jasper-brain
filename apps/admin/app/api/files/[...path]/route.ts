@@ -27,10 +27,32 @@ export async function GET(
   if (blobBackend() === 'vercel') {
     const blobPath = parts.join('/');
     const fresh = await signedBlobUrl(blobPath);
-    if (!fresh) return new NextResponse('Not found', { status: 404 });
-    const upstream = await fetch(fresh);
+    if (!fresh) {
+      return new NextResponse(`Not found: ${blobPath}`, { status: 404 });
+    }
+    let upstream: Response;
+    try {
+      upstream = await fetch(fresh, {
+        cache: 'no-store',
+        headers: {
+          Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`,
+        },
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'fetch failed';
+      console.error('[api/files] upstream fetch threw:', message, fresh);
+      return new NextResponse(`Upstream fetch threw: ${message}`, {
+        status: 502,
+      });
+    }
     if (!upstream.ok || !upstream.body) {
-      return new NextResponse('Upstream error', { status: 502 });
+      const detail = `${upstream.status} ${upstream.statusText}`;
+      const peek = await upstream.text().catch(() => '<no body>');
+      console.error('[api/files] upstream non-OK:', detail, peek.slice(0, 200), fresh);
+      return new NextResponse(
+        `Upstream non-OK: ${detail} — ${peek.slice(0, 200)}`,
+        { status: 502 },
+      );
     }
     return new NextResponse(upstream.body, {
       status: 200,
