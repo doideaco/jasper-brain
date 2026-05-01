@@ -5,14 +5,17 @@ import { useActionState } from 'react';
 import type { Artifact, FacetDefinition } from '@jasper-brain/core';
 import { saveArtifact, type ActionState } from '@/app/actions/artifacts';
 import { toYaml } from '@/lib/form-helpers';
+import type { UploadedAsset } from '@/lib/blob';
 import {
   LinesField,
   SelectField,
   TagsField,
   TextArea,
   TextField,
+  UrlPickerField,
   YamlField,
 } from './fields';
+import { LogoAssetsEditor } from './logo-assets-editor';
 
 const initial: ActionState = { error: null };
 
@@ -20,9 +23,30 @@ interface Props {
   brandId: string;
   facet: FacetDefinition;
   artifact?: Artifact;
+  uploadedAssets?: UploadedAsset[];
 }
 
-export function ArtifactForm({ brandId, facet, artifact }: Props) {
+function assetOptions(uploaded: UploadedAsset[] | undefined): Array<{
+  value: string;
+  label: string;
+}> {
+  if (!uploaded || uploaded.length === 0) return [];
+  return uploaded.map((asset) => {
+    const fileName = asset.pathname.split('/').pop() ?? asset.pathname;
+    const fullUrl =
+      asset.url.startsWith('http') || typeof window === 'undefined'
+        ? asset.url
+        : `${window.location.origin}${asset.url}`;
+    return { value: fullUrl, label: fileName };
+  });
+}
+
+export function ArtifactForm({
+  brandId,
+  facet,
+  artifact,
+  uploadedAssets,
+}: Props) {
   const [state, action, isPending] = useActionState(saveArtifact, initial);
   const isEdit = !!artifact;
 
@@ -41,7 +65,7 @@ export function ArtifactForm({ brandId, facet, artifact }: Props) {
             : 'Lowercase, hyphenated. e.g. "lead-with-outcome".'
         }
         defaultValue={artifact?.id}
-        disabled={isEdit}
+        readOnly={isEdit}
         placeholder={isEdit ? undefined : 'e.g. lead-with-outcome'}
       />
       <TextField
@@ -59,7 +83,11 @@ export function ArtifactForm({ brandId, facet, artifact }: Props) {
       />
       <TagsField name="tags" label="Tags" defaultValue={artifact?.tags} />
 
-      <TypeSpecificFields facet={facet} artifact={artifact} />
+      <TypeSpecificFields
+        facet={facet}
+        artifact={artifact}
+        uploadedAssets={uploadedAssets}
+      />
 
       {state.error && (
         <div className="rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
@@ -93,11 +121,14 @@ export function ArtifactForm({ brandId, facet, artifact }: Props) {
 function TypeSpecificFields({
   facet,
   artifact,
+  uploadedAssets,
 }: {
   facet: FacetDefinition;
   artifact?: Artifact;
+  uploadedAssets?: UploadedAsset[];
 }) {
   const type = facet.builtIn ? facet.id : 'custom';
+  const urlOptions = assetOptions(uploadedAssets);
 
   if (type === 'guideline') {
     const a = artifact?.type === 'guideline' ? artifact : undefined;
@@ -320,11 +351,12 @@ function TypeSpecificFields({
           defaultValue={a?.quote}
         />
         <TextField name="email" label="Email" defaultValue={a?.email} />
-        <TextField
+        <UrlPickerField
           name="imageUrl"
           label="Image URL"
-          hint="Headshot — public URL."
+          hint="Pick a headshot from uploaded assets, or paste any public URL."
           defaultValue={a?.imageUrl}
+          options={urlOptions}
         />
         <YamlField
           name="social"
@@ -391,12 +423,9 @@ function TypeSpecificFields({
     const a = artifact?.type === 'logo' ? artifact : undefined;
     return (
       <>
-        <YamlField
-          name="assets"
-          label="Assets (YAML)"
-          rows={10}
-          defaultValue={toYaml(a?.assets)}
-          hint='Array of assets. Each: { variant, format: "svg"|"png"|..., url, use, background: "light"|"dark"|"either" }'
+        <LogoAssetsEditor
+          defaultValue={a?.assets}
+          uploadedAssets={uploadedAssets ?? []}
         />
         <TextField
           name="clearSpace"

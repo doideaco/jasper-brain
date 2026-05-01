@@ -1,9 +1,12 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArtifactForm } from '@/components/artifact-form';
+import { listFiles } from '@/lib/blob';
 import { getStore } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
+
+const ASSET_FACETS = new Set(['logo', 'typography', 'person']);
 
 type Params = { brandId: string; type: string };
 
@@ -25,6 +28,9 @@ export default async function NewArtifactPage({
   } catch {
     notFound();
   }
+
+  const showAssetPicker = ASSET_FACETS.has(facetId);
+  const uploadedAssets = showAssetPicker ? await listFiles(brandId) : [];
 
   return (
     <div>
@@ -54,7 +60,11 @@ export default async function NewArtifactPage({
         )}
       </header>
 
-      <ArtifactForm brandId={brandId} facet={facet} />
+      <ArtifactForm
+        brandId={brandId}
+        facet={facet}
+        uploadedAssets={uploadedAssets}
+      />
     </div>
   );
 }

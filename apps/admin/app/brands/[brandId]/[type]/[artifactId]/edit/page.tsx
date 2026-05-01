@@ -53,15 +53,20 @@ export default async function EditArtifactPage({
       </header>
 
       <div className="grid lg:grid-cols-[1fr_18rem] gap-8">
-        <ArtifactForm brandId={brandId} facet={facet} artifact={artifact} />
+        <ArtifactForm
+          brandId={brandId}
+          facet={facet}
+          artifact={artifact}
+          uploadedAssets={assets}
+        />
         {showAssetPicker && (
           <aside className="space-y-3">
             <h3 className="text-xs uppercase tracking-wide text-stone-500 font-semibold">
-              Assets
+              Uploaded assets
             </h3>
             <p className="text-xs text-stone-500">
-              Click <strong>Copy URL</strong> on any uploaded asset, then paste
-              into the YAML field on the left.
+              Available below for inline pickers. Use <strong>Copy URL</strong>{' '}
+              if you need to paste into a YAML field.
             </p>
             <AssetPicker brandId={brandId} assets={assets} />
           </aside>

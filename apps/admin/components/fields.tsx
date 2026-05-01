@@ -21,13 +21,16 @@ export function TextField({
   required,
   defaultValue,
   disabled,
+  readOnly,
   placeholder,
 }: CommonProps & {
   defaultValue?: string;
   disabled?: boolean;
+  readOnly?: boolean;
   placeholder?: string;
 }) {
   const id = useId();
+  const muted = disabled || readOnly;
   return (
     <div>
       <label htmlFor={id} className={labelClass}>
@@ -41,8 +44,9 @@ export function TextField({
         defaultValue={defaultValue ?? ''}
         required={required}
         disabled={disabled}
+        readOnly={readOnly}
         placeholder={placeholder}
-        className={`${inputClass} ${disabled ? 'bg-stone-50 text-stone-500' : ''}`}
+        className={`${inputClass} ${muted ? 'bg-stone-50 text-stone-500' : ''}`}
       />
       {hint && <p className={hintClass}>{hint}</p>}
     </div>
@@ -141,6 +145,46 @@ export function YamlField({
       rows={rows}
       monospace
     />
+  );
+}
+
+export function UrlPickerField({
+  name,
+  label,
+  hint,
+  defaultValue,
+  options,
+  placeholder,
+}: CommonProps & {
+  defaultValue?: string;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+}) {
+  const id = useId();
+  const listId = `${id}-list`;
+  return (
+    <div>
+      <label htmlFor={id} className={labelClass}>
+        {label}
+      </label>
+      <input
+        id={id}
+        name={name}
+        type="text"
+        defaultValue={defaultValue ?? ''}
+        list={listId}
+        placeholder={placeholder ?? 'Pick from uploaded assets or paste a URL'}
+        className={`${inputClass} font-mono text-xs`}
+      />
+      <datalist id={listId}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </datalist>
+      {hint && <p className={hintClass}>{hint}</p>}
+    </div>
   );
 }
 
