@@ -16,6 +16,8 @@ import {
   YamlField,
 } from './fields';
 import { LogoAssetsEditor } from './logo-assets-editor';
+import { TypeScaleEditor } from './type-scale-editor';
+import { TypefacesEditor } from './typefaces-editor';
 
 const initial: ActionState = { error: null };
 
@@ -374,20 +376,11 @@ function TypeSpecificFields({
     const a = artifact?.type === 'typography' ? artifact : undefined;
     return (
       <>
-        <YamlField
-          name="typefaces"
-          label="Typefaces (YAML)"
-          rows={14}
-          defaultValue={toYaml(a?.typefaces)}
-          hint='Array of typefaces. Each: { family, role: "primary"|"display"|"mono", stack, weights, source: { provider, url, cssImport, files: [{ weight, style, url, format }] } }'
+        <TypefacesEditor
+          defaultValue={a?.typefaces}
+          uploadedAssets={uploadedAssets ?? []}
         />
-        <YamlField
-          name="scale"
-          label="Type scale (YAML)"
-          rows={12}
-          defaultValue={toYaml(a?.scale)}
-          hint='Array of steps. Each: { name, fontSize, lineHeight, fontWeight, letterSpacing, use }'
-        />
+        <TypeScaleEditor defaultValue={a?.scale} />
         <TextArea
           name="body"
           label="Usage rules"
