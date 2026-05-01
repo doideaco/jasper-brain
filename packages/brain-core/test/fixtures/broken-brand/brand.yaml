@@ -1,0 +1,2 @@
+name: Broken Brand
+description: Used to test that bad files fail loudly without crashing the whole store.

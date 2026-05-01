@@ -1,0 +1,33 @@
+name: Jasper
+tagline: AI content for marketing teams that ship.
+description: AI content platform purpose-built for marketing teams. Helps brands plan, produce, and scale on-brand content across every channel.
+
+primaryUrl: https://jasper.ai
+urls:
+  product: https://jasper.ai
+  docs: https://docs.jasper.ai
+  blog: https://jasper.ai/blog
+  pricing: https://jasper.ai/pricing
+  press: https://jasper.ai/press
+
+mission: Empower every marketing team to ship more on-brand content, faster, in the AI era.
+vision: A world where every brand sounds unmistakably like itself — everywhere it shows up.
+
+founded: 2021
+hq:
+  city: Austin
+  region: TX
+  country: USA
+
+contact:
+  email: hello@jasper.ai
+  twitter: "@heyjasperai"
+  linkedin: company/heyjasperai
+  github: jasper-ai
+
+primaryVoiceId: default
+
+tags:
+  - marketing
+  - ai
+  - saas

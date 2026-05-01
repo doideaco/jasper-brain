@@ -1,0 +1,15 @@
+node_modules
+dist
+.next
+*.tsbuildinfo
+.DS_Store
+*.log
+.env
+.env.local
+.env.*.local
+coverage
+.vscode
+.idea
+.vercel
+.claude/settings.local.json
+brands/*/uploads/
