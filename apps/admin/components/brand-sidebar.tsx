@@ -35,6 +35,7 @@ export function BrandSidebar({
   const isFacetsNew = pathname.startsWith(`${brandHome}/facets`);
   const isAssets = pathname.startsWith(`${brandHome}/assets`);
   const isKit = pathname.startsWith(`${brandHome}/kit`);
+  const isPlayground = pathname.startsWith(`${brandHome}/playground`);
 
   return (
     <aside className="w-60 shrink-0">
@@ -119,6 +120,24 @@ export function BrandSidebar({
             }`}
           >
             Brand kit
+          </Link>
+          <Link
+            href={`${brandHome}/playground`}
+            className={`block px-2 py-1 rounded text-sm transition-colors ${
+              isPlayground
+                ? 'bg-stone-100 text-stone-900 font-medium'
+                : 'text-stone-600 hover:text-stone-900'
+            }`}
+          >
+            Playground
+          </Link>
+          <Link
+            href={`/share/${brandId}`}
+            target="_blank"
+            rel="noreferrer"
+            className="block px-2 py-1 rounded text-sm text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            Public page ↗
           </Link>
           <Link
             href={`${brandHome}/assets`}

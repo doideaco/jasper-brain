@@ -17,6 +17,7 @@
     "@jasper-brain/store-postgres": "*",
     "@modelcontextprotocol/sdk": "^1.0.4",
     "@vercel/blob": "^2.3.3",
+    "ai": "^6.0.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
