@@ -8,11 +8,13 @@ import type {
   Person,
   Product,
   Texture,
+  TypeScaleStep,
   Typography,
   Value,
   Voice,
 } from '@jasper-brain/core';
 import { CopyButton } from '@/components/share/copy-button';
+import { generateFontFace } from '@/lib/font-utils';
 import { getStore } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -54,6 +56,11 @@ export default async function PublicBrandPage({
 
   const tokens = paletteTokens(palette);
   const typeCss = typographyCss(typography);
+  const displayStep = scaleStep(typography, ['display', 'hero']);
+  const h1Step = scaleStep(typography, ['h1']);
+  const h2Step = scaleStep(typography, ['h2']);
+  const h3Step = scaleStep(typography, ['h3']);
+  const heroStep = displayStep ?? h1Step;
 
   const headerList = await headers();
   const host =
@@ -108,10 +115,10 @@ ${typeCss}
           <h1
             className="display mt-12"
             style={{
-              fontSize: 'clamp(48px, 7vw, 96px)',
-              lineHeight: '1.02',
-              fontWeight: 600,
-              letterSpacing: '-0.025em',
+              fontSize: heroStep?.fontSize ?? 'clamp(48px, 7vw, 96px)',
+              lineHeight: heroStep?.lineHeight ?? '1.02',
+              fontWeight: heroStep?.fontWeight ?? 600,
+              letterSpacing: heroStep?.letterSpacing ?? '-0.025em',
             }}
           >
             {brand.tagline ?? brand.name}
@@ -162,9 +169,11 @@ ${typeCss}
         <Section title="Identity">
           <div className="grid md:grid-cols-2 gap-8">
             {brand.mission && (
-              <Statement label="Mission" body={brand.mission} />
+              <Statement label="Mission" body={brand.mission} step={h2Step} />
             )}
-            {brand.vision && <Statement label="Vision" body={brand.vision} />}
+            {brand.vision && (
+              <Statement label="Vision" body={brand.vision} step={h2Step} />
+            )}
           </div>
         </Section>
       )}
@@ -243,7 +252,10 @@ ${typeCss}
       {typography && (
         <Section title="Typography">
           <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {typography.typefaces.map((tf) => (
+            {typography.typefaces.map((tf) => {
+              const heaviest =
+                tf.weights.length > 0 ? Math.max(...tf.weights) : 400;
+              return (
               <div
                 key={tf.family + tf.role}
                 className="card rounded-lg p-6"
@@ -256,7 +268,7 @@ ${typeCss}
                   <span>{tf.weights.join(' · ')}</span>
                 </div>
                 <div
-                  style={{ fontSize: '64px', lineHeight: '1.05', fontWeight: 600 }}
+                  style={{ fontSize: '64px', lineHeight: '1.05', fontWeight: heaviest }}
                 >
                   {tf.family}
                 </div>
@@ -272,7 +284,8 @@ ${typeCss}
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
           {typography.scale.length > 0 && (
             <div className="card rounded-lg overflow-hidden">
@@ -441,7 +454,12 @@ ${typeCss}
               <div key={v.id} className="card rounded-lg p-6">
                 <div
                   className="display mb-2"
-                  style={{ fontSize: '24px', fontWeight: 600 }}
+                  style={{
+                    fontSize: h3Step?.fontSize ?? '24px',
+                    lineHeight: h3Step?.lineHeight ?? undefined,
+                    fontWeight: h3Step?.fontWeight ?? 600,
+                    letterSpacing: h3Step?.letterSpacing ?? undefined,
+                  }}
                 >
                   {v.name}
                 </div>
@@ -523,7 +541,12 @@ ${typeCss}
               <div key={p.id} className="card rounded-lg p-6">
                 <div
                   className="display mb-2"
-                  style={{ fontSize: '28px', fontWeight: 600 }}
+                  style={{
+                    fontSize: h3Step?.fontSize ?? '28px',
+                    lineHeight: h3Step?.lineHeight ?? undefined,
+                    fontWeight: h3Step?.fontWeight ?? 600,
+                    letterSpacing: h3Step?.letterSpacing ?? undefined,
+                  }}
                 >
                   {p.name}
                 </div>
@@ -630,7 +653,12 @@ ${typeCss}
           </div>
           <h2
             className="display mt-2 mb-2"
-            style={{ fontSize: '40px', fontWeight: 600, lineHeight: '1.1' }}
+            style={{
+              fontSize: h2Step?.fontSize ?? '40px',
+              lineHeight: h2Step?.lineHeight ?? '1.1',
+              fontWeight: h2Step?.fontWeight ?? 600,
+              letterSpacing: h2Step?.letterSpacing ?? undefined,
+            }}
           >
             One source. Many surfaces.
           </h2>
@@ -725,7 +753,15 @@ function Section({
   );
 }
 
-function Statement({ label, body }: { label: string; body: string }) {
+function Statement({
+  label,
+  body,
+  step,
+}: {
+  label: string;
+  body: string;
+  step?: TypeScaleStep;
+}) {
   return (
     <div>
       <div className="mono text-[10px] uppercase tracking-wider opacity-50 mb-2">
@@ -734,9 +770,10 @@ function Statement({ label, body }: { label: string; body: string }) {
       <p
         className="display"
         style={{
-          fontSize: '28px',
-          lineHeight: '1.3',
-          fontWeight: 600,
+          fontSize: step?.fontSize ?? '28px',
+          lineHeight: step?.lineHeight ?? '1.3',
+          fontWeight: step?.fontWeight ?? 600,
+          letterSpacing: step?.letterSpacing ?? undefined,
         }}
       >
         {body}
@@ -895,15 +932,57 @@ function paletteTokens(palette?: Palette): PaletteTokens {
 
 function typographyCss(typography?: Typography): string {
   if (!typography) return '';
-  return typography.typefaces
-    .map((tf) => {
+  const blocks: string[] = [];
+  for (const tf of typography.typefaces) {
+    // 1. Self-hosted @font-face declarations (uploaded woff/woff2/ttf/otf)
+    const files = tf.source?.files ?? [];
+    if (files.length > 0) {
+      const face = generateFontFace(
+        tf.family,
+        files.map((f) => ({
+          url: f.url,
+          weight: f.weight,
+          style: f.style,
+          format: f.format,
+        })),
+      );
+      if (face) blocks.push(face);
+    }
+
+    // 2. Google Fonts / external @import (only if no self-hosted files)
+    if (files.length === 0) {
       const css = tf.source?.cssImport ?? '';
-      if (!css) return '';
-      const linkMatch = css.match(/<link[^>]+href=['"]([^'"]+)['"]/i);
-      return linkMatch ? `@import url('${linkMatch[1]}');` : css;
-    })
-    .filter(Boolean)
-    .join('\n');
+      if (css) {
+        const linkMatch = css.match(/<link[^>]+href=['"]([^'"]+)['"]/i);
+        blocks.push(linkMatch ? `@import url('${linkMatch[1]}');` : css);
+      }
+    }
+  }
+  return blocks.join('\n\n');
+}
+
+function scaleStep(
+  typography: Typography | undefined,
+  names: string[],
+): TypeScaleStep | undefined {
+  if (!typography) return undefined;
+  for (const name of names) {
+    const step = typography.scale.find(
+      (s) => s.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (step) return step;
+  }
+  return undefined;
+}
+
+function stepStyle(step: TypeScaleStep | undefined): React.CSSProperties {
+  if (!step) return {};
+  return {
+    fontSize: step.fontSize,
+    lineHeight: step.lineHeight ?? undefined,
+    fontWeight: step.fontWeight ?? undefined,
+    letterSpacing: step.letterSpacing ?? undefined,
+  };
 }
 
 function pickPrimary<T extends { id: string; tags: string[] }>(
