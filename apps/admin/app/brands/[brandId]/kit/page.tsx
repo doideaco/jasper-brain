@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getBrandKit } from '@jasper-brain/core';
 import { BrandKitView } from '@/components/brand-kit-view';
@@ -27,21 +28,31 @@ export default async function KitPage({
 
   return (
     <div>
-      <header className="mb-6">
-        <div className="text-xs uppercase tracking-wide text-stone-400 mb-1">
-          Brand kit
+      <header className="mb-6 flex items-start justify-between gap-6">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-stone-400 mb-1">
+            Brand kit
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {kit.brand.name}
+          </h1>
+          <p className="text-stone-600 mt-2 max-w-2xl">
+            Exactly what an AI tool sees when it calls{' '}
+            <code className="bg-stone-100 px-1.5 py-0.5 rounded text-xs">
+              brain_get_brand_kit
+            </code>{' '}
+            over MCP. The visual view shows it the way you'd review it; the JSON
+            view is the literal payload — copy and paste into a prompt to test.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {kit.brand.name}
-        </h1>
-        <p className="text-stone-600 mt-2 max-w-2xl">
-          Exactly what an AI tool sees when it calls{' '}
-          <code className="bg-stone-100 px-1.5 py-0.5 rounded text-xs">
-            brain_get_brand_kit
-          </code>{' '}
-          over MCP. The visual view shows it the way you'd review it; the JSON
-          view is the literal payload — copy and paste into a prompt to test.
-        </p>
+        <Link
+          href={`/share/${brandId}`}
+          target="_blank"
+          rel="noreferrer"
+          className="rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 shrink-0"
+        >
+          Public brand page ↗
+        </Link>
       </header>
 
       <KitToggle
