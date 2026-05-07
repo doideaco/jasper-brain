@@ -42,10 +42,10 @@ sections:
   - name: Hero block
     guidance: |-
       The opening message.
-      • Headline uses `h1` step (48px / 1.1 / 600 / -0.02em) in typography/default role=display (Tiempos Headline). Color: palette token "Ink".
+      • Headline uses `h1` step (48px / 1.1 / 600 / -0.02em) in typography/default role=primary (Inter). Color: palette token "Ink".
       • Subhead uses `body-lg` (18px / 1.6 / 400) role=primary (Inter). Color: palette token "Stone-700".
       • Outcome-led headline per guideline/lead-with-outcome.
-      • IMPORTANT: include a CSS @font-face fallback with web-safe `Georgia, serif` for clients that strip @import. Use typography/default cssImport verbatim AND a fallback inline.
+      • IMPORTANT: include a web-safe fallback stack (`ui-sans-serif, system-ui, sans-serif`) inline for clients that strip @import. Use typography/default cssImport verbatim AND keep the inline fallback on every element.
     tone: confident, plain
     lengthHint: headline ≤10 words; subhead one sentence
     required: true

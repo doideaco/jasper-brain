@@ -3,32 +3,14 @@ id: primary
 name: Jasper — primary wordmark
 description: The default Jasper wordmark. Use this anywhere a logo is needed unless the context specifically calls for an alternate variant.
 tags: [primary, wordmark]
-assets:
-  - variant: wordmark-on-light
-    format: svg
-    url: https://jasper.ai/brand/wordmark-light.svg
-    use: Default logo on light backgrounds. The everyday choice.
-    background: light
-  - variant: wordmark-on-dark
-    format: svg
-    url: https://jasper.ai/brand/wordmark-dark.svg
-    use: Inverted wordmark for use on dark backgrounds and photography.
-    background: dark
-  - variant: icon-on-light
-    format: svg
-    url: https://jasper.ai/brand/icon-light.svg
-    use: App icon, favicon, anywhere the full wordmark won't fit.
-    background: light
-  - variant: wordmark-on-light
-    format: png
-    url: https://jasper.ai/brand/wordmark-light@2x.png
-    use: Fallback for environments that don't render SVG (some legacy email clients).
-    background: light
+assets: []
 clearSpace: Maintain at least 1× cap-height of clear space around the wordmark on all sides. No other elements may sit closer.
 minSize: 96px wide for the wordmark; 24px square for the icon. Below these, legibility breaks.
 ---
 
 # Usage rules
+
+**First-time setup:** upload SVGs (light variant + dark variant) via `/brands/jasper/assets`, then edit this item and use the **Browse** button on each Asset row to pick the file. Storing SVGs in Vercel Blob means every consumer of the Logo facet (admin, public page, MCP, JSON-LD) gets the same proxied URL.
 
 **Do**
 - Use the SVG wherever possible. PNG only as a fallback.

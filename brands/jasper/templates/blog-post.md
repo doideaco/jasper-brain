@@ -22,7 +22,7 @@ sections:
     guidance: |-
       Single outcome-led headline + subhead.
       • Optional eyebrow above headline using `caption` scale step (12px Inter 500, UPPERCASE, letter-spacing 0.04em, color Stone-500). Skip the eyebrow on most posts.
-      • Headline uses `display` step (72px / 1.05 / 600 / -0.025em) in typography/default typeface role=display (Tiempos Headline). Color: Ink.
+      • Headline uses `display` step (72px / 1.05 / 700 / -0.025em) in typography/default role=primary (Inter). Color: Ink.
       • Subhead uses `body-lg` (18px / 1.6 / 400) in role=primary (Inter). Color: Stone-700. One sentence, names the audience and the change.
       • Apply guideline/lead-with-outcome — first words must answer "what becomes true for me?", not "what does the product do?".
       • No image in the hero unless the post is photo-led.

@@ -33,7 +33,7 @@ export interface ParsedFontFile {
  *   Inter-Regular.woff2 → Inter / 400 / normal / woff2
  *   Inter-Bold.woff2     → Inter / 700 / normal / woff2
  *   Inter-BoldItalic.woff2 → Inter / 700 / italic / woff2
- *   TiemposHeadline-Regular.woff2 → Tiempos Headline / 400 / normal / woff2
+ *   PlayfairDisplay-Regular.woff2 → Playfair Display / 400 / normal / woff2
  *   inter_medium.ttf     → Inter / 500 / normal / ttf
  */
 export function parseFontFilename(filename: string): ParsedFontFile {
@@ -69,7 +69,7 @@ export function parseFontFilename(filename: string): ParsedFontFile {
   if (style === undefined) style = 'normal';
 
   // Family is the remaining tokens, but we also need to split CamelCase
-  // inside any single token (e.g. "TiemposHeadline" → "Tiempos Headline").
+  // inside any single token (e.g. "PlayfairDisplay" → "Playfair Display").
   const familyTokens = tokens.flatMap((t) =>
     t.replace(/([a-z0-9])([A-Z])/g, '$1 $2').split(/\s+/).filter(Boolean),
   );
@@ -101,7 +101,7 @@ export function suggestStack(family: string, role: string): string {
   if (
     r.includes('display') ||
     r.includes('serif') ||
-    /tiempos|playfair|georgia|caslon|garamond|baskerville/i.test(family)
+    /playfair|georgia|caslon|garamond|baskerville/i.test(family)
   ) {
     return `${quoted}, Georgia, 'Times New Roman', serif`;
   }

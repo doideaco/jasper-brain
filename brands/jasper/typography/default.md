@@ -12,26 +12,7 @@ typefaces:
       provider: google-fonts
       url: https://fonts.google.com/specimen/Inter
       cssImport: "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');"
-      files:
-        - weight: 400
-          style: normal
-          url: https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50ojIa1ZL7.woff2
-          format: woff2
-        - weight: 600
-          style: normal
-          url: https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50ojIa1ZL7.woff2
-          format: woff2
-    use: Body, UI, marketing copy. The default for everything unless display calls for something different.
-
-  - family: Tiempos Headline
-    role: display
-    stack: "'Tiempos Headline', Georgia, 'Times New Roman', serif"
-    weights: [400, 600]
-    source:
-      provider: self-hosted
-      url: https://klim.co.nz/retail-fonts/tiempos-headline/
-      cssImport: "/* Licensed via Klim Type Foundry — see source link for licensing. */"
-    use: Hero headlines and editorial moments only. Pairs with Inter for body. Never for body copy or UI.
+    use: Everything — body, UI, marketing copy, headlines, eyebrows. Single-typeface system.
 
   - family: JetBrains Mono
     role: mono
@@ -47,9 +28,9 @@ scale:
   - name: display
     fontSize: "72px"
     lineHeight: "1.05"
-    fontWeight: 600
+    fontWeight: 700
     letterSpacing: "-0.025em"
-    use: Hero headlines only. Tiempos Headline.
+    use: Hero headlines only.
   - name: h1
     fontSize: "48px"
     lineHeight: "1.1"
@@ -92,7 +73,8 @@ scale:
 
 # Usage rules
 
-- **One pairing.** Inter for everything; Tiempos Headline only when a piece earns a "moment" — a hero, a quote, a launch announcement.
+- **Single typeface.** Inter handles everything from caption to display. Jasper does not pair display fonts.
+- **Weight does the work.** Display uses 700, headings 600, body 400. The difference between hierarchy levels is weight + size + tracking, not family.
 - **Never mix scales across surfaces.** A landing page uses display, h1, body — not h2 substituting for h1 because "the headline is shorter."
 - **Letter-spacing tightens at scale.** All display and h1 use negative tracking. Body and below stay at 0.
 - **Numerals are tabular** in any data context (pricing tables, dashboards, comparison cards). Use `font-variant-numeric: tabular-nums`.
