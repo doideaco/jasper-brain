@@ -14,6 +14,7 @@ export const ARTIFACT_TYPES = [
   'palette',
   'logo',
   'texture',
+  'faq',
   'custom',
 ] as const;
 export type ArtifactType = (typeof ARTIFACT_TYPES)[number];
@@ -255,6 +256,27 @@ export const Texture = z.object({
 });
 export type Texture = z.infer<typeof Texture>;
 
+export const FaqSource = z.object({
+  title: z.string(),
+  url: z.string().optional(),
+});
+export type FaqSource = z.infer<typeof FaqSource>;
+
+export const Faq = z.object({
+  type: z.literal('faq'),
+  ...baseArtifactFields,
+  question: z.string(),
+  answer: z.string(),
+  /** Optional snippet-friendly version (used by AI for quick replies and meta descriptions). */
+  shortAnswer: z.string().optional(),
+  /** Where the answer comes from — surfaces in citations and Schema.org. */
+  sources: z.array(FaqSource).default([]),
+  /** Optional grouping (e.g. "Pricing", "Setup", "Security"). */
+  category: z.string().optional(),
+  body: z.string().optional(),
+});
+export type Faq = z.infer<typeof Faq>;
+
 export const CustomItem = z.object({
   type: z.literal('custom'),
   facetId: z.string().min(1),
@@ -278,6 +300,7 @@ export const Artifact = z.discriminatedUnion('type', [
   Palette,
   Logo,
   Texture,
+  Faq,
   CustomItem,
 ]);
 export type Artifact = z.infer<typeof Artifact>;
@@ -329,4 +352,5 @@ export const ARTIFACT_DIRS: Record<Exclude<ArtifactType, 'custom'>, string> = {
   palette: 'palettes',
   logo: 'logos',
   texture: 'textures',
+  faq: 'faqs',
 };

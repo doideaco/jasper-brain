@@ -492,6 +492,55 @@ function renderTypeSpecific(artifact: Artifact) {
           )}
         </>
       );
+    case 'faq':
+      return (
+        <>
+          <Section title="Question">
+            <p className="text-stone-900 text-lg leading-snug">
+              {artifact.question}
+            </p>
+          </Section>
+          <Section title="Canonical answer">
+            <p className="text-stone-700 whitespace-pre-wrap leading-relaxed">
+              {artifact.answer}
+            </p>
+          </Section>
+          {artifact.shortAnswer && (
+            <Section title="Short answer">
+              <p className="text-stone-700 italic">{artifact.shortAnswer}</p>
+            </Section>
+          )}
+          {artifact.category && (
+            <Section title="Category">
+              <span className="text-sm bg-stone-100 px-2 py-0.5 rounded text-stone-700">
+                {artifact.category}
+              </span>
+            </Section>
+          )}
+          {artifact.sources.length > 0 && (
+            <Section title="Sources">
+              <ul className="text-sm space-y-1">
+                {artifact.sources.map((s) => (
+                  <li key={s.title}>
+                    {s.url ? (
+                      <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-stone-700 underline hover:text-stone-900"
+                      >
+                        {s.title} ↗
+                      </a>
+                    ) : (
+                      <span className="text-stone-700">{s.title}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+        </>
+      );
     case 'texture':
       return (
         <>

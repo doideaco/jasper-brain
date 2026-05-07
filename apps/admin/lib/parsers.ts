@@ -1,6 +1,7 @@
 import {
   Artifact,
   CustomItem,
+  Faq,
   Guardrail,
   Guideline,
   Knowledge,
@@ -53,6 +54,8 @@ export function parseArtifactForm(facet: FacetDefinition, fd: FormData): Artifac
       return parseLogo(fd);
     case 'texture':
       return parseTexture(fd);
+    case 'faq':
+      return parseFaq(fd);
     default:
       throw new Error(`Unknown built-in facet: ${facet.id}`);
   }
@@ -175,6 +178,19 @@ function parsePalette(fd: FormData): Palette {
     type: 'palette',
     ...baseFields(fd),
     colors: getYaml(fd, 'colors') ?? [],
+    body: getString(fd, 'body'),
+  });
+}
+
+function parseFaq(fd: FormData): Faq {
+  return Faq.parse({
+    type: 'faq',
+    ...baseFields(fd),
+    question: requireString(fd, 'question'),
+    answer: requireString(fd, 'answer'),
+    shortAnswer: getString(fd, 'shortAnswer'),
+    sources: getYaml(fd, 'sources') ?? [],
+    category: getString(fd, 'category'),
     body: getString(fd, 'body'),
   });
 }

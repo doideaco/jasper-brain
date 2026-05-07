@@ -433,6 +433,58 @@ function TypeSpecificFields({
     return <TextureEditor defaultValue={a} />;
   }
 
+  if (type === 'faq') {
+    const a = artifact?.type === 'faq' ? artifact : undefined;
+    return (
+      <>
+        <TextField
+          name="question"
+          label="Question"
+          required
+          placeholder="e.g. How is Jasper different from generic AI tools?"
+          hint="As a buyer/user would naturally ask it."
+          defaultValue={a?.question}
+        />
+        <TextArea
+          name="answer"
+          label="Canonical answer"
+          required
+          rows={6}
+          hint="The brand-approved answer. AI tools are instructed to use this VERBATIM — write the exact response you want propagating."
+          defaultValue={a?.answer}
+        />
+        <TextArea
+          name="shortAnswer"
+          label="Short answer (optional)"
+          rows={2}
+          hint="One- or two-sentence version for snippets, meta descriptions, and quick replies."
+          defaultValue={a?.shortAnswer}
+        />
+        <TextField
+          name="category"
+          label="Category"
+          placeholder='e.g. "Pricing", "Setup", "Security"'
+          hint="Optional. Groups questions on the FAQ page."
+          defaultValue={a?.category}
+        />
+        <YamlField
+          name="sources"
+          label="Sources (YAML)"
+          rows={4}
+          defaultValue={toYaml(a?.sources)}
+          hint="Array of {title, url}. Surfaced as citations after the answer and as schema:citation in JSON-LD."
+        />
+        <TextArea
+          name="body"
+          label="Notes (markdown)"
+          rows={3}
+          hint="Optional context for the team. Not surfaced to AI tools."
+          defaultValue={a?.body}
+        />
+      </>
+    );
+  }
+
   if (type === 'custom') {
     const a = artifact?.type === 'custom' ? artifact : undefined;
     return (

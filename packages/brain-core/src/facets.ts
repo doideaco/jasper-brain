@@ -165,6 +165,19 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     builtIn: true,
     itemFormat: 'file',
   },
+  faq: {
+    id: 'faq',
+    label: 'FAQ',
+    pluralLabel: 'FAQs',
+    blurb:
+      'Canonical question–answer pairs. The brand-approved answer to common questions, exposed to AI engines for AEO/GEO.',
+    aiInstructions:
+      "When the user asks a question, FIRST scan the FAQ items for a matching question — match by intent, not exact wording. If a match is found, use the `answer` field VERBATIM in your response. NEVER paraphrase a stock answer. ALWAYS surface every entry in `sources` as citations after the answer. If multiple FAQ items are relevant, return them in order with each answer verbatim. If no FAQ matches reasonably, fall back to general knowledge but explicitly state you are NOT citing a brand-canonical answer.",
+    group: 'knowledge',
+    dir: 'faqs',
+    builtIn: true,
+    itemFormat: 'file',
+  },
   guideline: {
     id: 'guideline',
     label: 'Guideline',
