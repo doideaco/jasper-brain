@@ -36,13 +36,18 @@ export interface ImportResult {
   brands?: number;
   items?: number;
   customFacets?: number;
+  itemsSkipped?: number;
+  mode?: 'overwrite' | 'add-only';
   errors?: string[];
 }
 
 export async function importFromFilesystem(
   _prev: ImportResult | null,
-  _formData: FormData,
+  formData: FormData,
 ): Promise<ImportResult> {
+  const mode: 'overwrite' | 'add-only' =
+    formData.get('mode') === 'add-only' ? 'add-only' : 'overwrite';
+
   try {
     await requireAdmin();
   } catch (err) {
@@ -75,6 +80,7 @@ export async function importFromFilesystem(
 
   let brandCount = 0;
   let itemCount = 0;
+  let itemsSkipped = 0;
   let customFacetCount = 0;
   const errors: string[] = [];
 
@@ -120,12 +126,26 @@ export async function importFromFilesystem(
 
       const artifacts = await source.listArtifacts(brand.id);
       for (const artifact of artifacts) {
+        const fid =
+          artifact.type === 'custom' ? artifact.facetId : artifact.type;
+
+        // In add-only mode, skip artifacts that already exist in the
+        // target store. This preserves any local edits (uploaded asset
+        // URLs, hand-edited typography, etc.) made through the admin UI.
+        if (mode === 'add-only') {
+          try {
+            await target.getArtifact(brand.id, fid, artifact.id);
+            itemsSkipped += 1;
+            continue; // exists — skip
+          } catch {
+            // doesn't exist — fall through to put
+          }
+        }
+
         try {
           await target.putArtifact(brand.id, artifact);
           itemCount += 1;
         } catch (err) {
-          const fid =
-            artifact.type === 'custom' ? artifact.facetId : artifact.type;
           errors.push(
             `${brand.id}/${fid}/${artifact.id}: ${err instanceof Error ? err.message : 'failed'}`,
           );
@@ -144,10 +164,15 @@ export async function importFromFilesystem(
 
   return {
     ok: true,
-    message: `Imported from ${sourceRoot}.`,
+    message:
+      mode === 'add-only'
+        ? `Imported new items only from ${sourceRoot}. Existing items were preserved.`
+        : `Imported from ${sourceRoot}.`,
     brands: brandCount,
     items: itemCount,
     customFacets: customFacetCount,
+    itemsSkipped,
+    mode,
     errors: errors.length > 0 ? errors : undefined,
   };
 }

@@ -21,10 +21,11 @@ export default async function ImportPage() {
           Import filesystem brands
         </h1>
         <p className="text-stone-600 mt-2 max-w-2xl">
-          Walks the local <code>brands/</code> directory and writes everything
-          (brand profiles, items across all facets, custom facet definitions)
-          into the active store. Existing rows with the same ids get
-          overwritten, so re-running is safe.
+          Walks the local <code>brands/</code> directory and writes brand
+          profiles, items across all facets, and custom facet definitions
+          into the active store. Pick a mode below — <strong>add-only</strong>{' '}
+          is the safe default for grabbing new items added in code without
+          touching your hand-edited records.
         </p>
         <div className="mt-3 inline-flex items-center gap-2 text-xs text-stone-500">
           <span>active store:</span>
