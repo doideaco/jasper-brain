@@ -74,8 +74,13 @@ export async function POST(
         id: body.id ?? null,
         result: {
           protocolVersion: PROTOCOL_VERSION,
-          capabilities: { tools: { listChanged: false } },
+          capabilities: {
+            tools: { listChanged: false },
+            prompts: { listChanged: false },
+          },
           serverInfo: { name: 'jasper-brain', version: '0.0.1' },
+          instructions:
+            'Jasper Brain — single source of truth for brand context. ALWAYS call brain_get_brand_kit before authoring; never rely on prior turns. Slash-command prompts (/write, /render-template, /audit, /brief) auto-fetch fresh context.',
         },
       });
     }
