@@ -648,6 +648,20 @@ ${typeCss}
         }}
       >
         <div className="mx-auto max-w-5xl px-8 py-20">
+          <div className="flex items-center gap-2 mb-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brainy.svg"
+              alt="Brainy"
+              className="h-5 w-auto opacity-90"
+            />
+            <span
+              className="mono text-xs uppercase tracking-wider"
+              style={{ color: 'var(--brand-fg-muted)' }}
+            >
+              by Jasper
+            </span>
+          </div>
           <div className="mono text-xs uppercase tracking-wider opacity-60">
             For developers and AI agents
           </div>
@@ -712,7 +726,7 @@ ${typeCss}
           borderColor: 'var(--brand-border)',
         }}
       >
-        <div className="mx-auto max-w-5xl px-8 flex flex-wrap items-baseline justify-between gap-4 text-sm">
+        <div className="mx-auto max-w-5xl px-8 flex flex-wrap items-center justify-between gap-4 text-sm">
           <div style={{ color: 'var(--brand-fg-muted)' }}>
             This page is generated from {brand.name}'s{' '}
             <span className="font-medium" style={{ color: 'var(--brand-fg)' }}>
@@ -720,10 +734,16 @@ ${typeCss}
             </span>
             . Updates here propagate to every connected surface in real time.
           </div>
-          <div
-            className="mono text-xs uppercase tracking-wider opacity-50"
-          >
-            Brain · by Jasper
+          <div className="flex items-center gap-2 opacity-70">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/brainy.svg"
+              alt="Brainy"
+              className="h-4 w-auto"
+            />
+            <span className="mono text-xs uppercase tracking-wider">
+              by Jasper
+            </span>
           </div>
         </div>
       </footer>
