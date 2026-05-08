@@ -37,9 +37,9 @@ background-size: 16px 16px;`,
     label: 'Soft gradient',
     css: `background: linear-gradient(
   135deg,
-  #f5f3ff 0%,
+  #f5f5f4 0%,
   #fafaf9 50%,
-  #f0fdf4 100%
+  #fafaf9 100%
 );`,
   },
 ];

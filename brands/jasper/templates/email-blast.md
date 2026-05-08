@@ -42,7 +42,7 @@ sections:
   - name: Hero block
     guidance: |-
       The opening message.
-      • Headline uses `h1` step (48px / 1.1 / 600 / -0.02em) in typography/default role=primary (Inter). Color: palette token "Ink".
+      • Headline uses `h1` step (48px / 1.1 / 300 / -0.02em) in typography/default role=display (Feature Display). Color: palette token "Ink".
       • Subhead uses `body-lg` (18px / 1.6 / 400) role=primary (Inter). Color: palette token "Stone-700".
       • Outcome-led headline per guideline/lead-with-outcome.
       • IMPORTANT: include a web-safe fallback stack (`ui-sans-serif, system-ui, sans-serif`) inline for clients that strip @import. Use typography/default cssImport verbatim AND keep the inline fallback on every element.
@@ -68,7 +68,7 @@ sections:
   - name: Primary CTA
     guidance: |-
       One button. One destination.
-      • Pill-shaped button: filled with palette token "Brand" (#7c3aed), text in palette token "Surface" (#fafaf9).
+      • Pill-shaped button: filled with palette token "Brand" (#FA4028), text in palette token "Surface" (#fafaf9).
       • `body` step Inter weight 500. Padding: 12px 24px. Border-radius: 999px (full pill).
       • Centred horizontally with 32px margin top/bottom.
       • Button label is outcome-led, ≤4 words. "See how it works" / "Start a 14-day trial" / "Read the announcement".
@@ -107,6 +107,37 @@ sections:
 ---
 
 # Email blast template — usage rules
+
+## Output contract (READ FIRST — non-negotiable)
+
+When invoked, you MUST return a single, complete, previewable HTML email document. Nothing else.
+
+1. **Respond with EXACTLY one fenced ```html block.** No prose before, after, or between. No summary, no "here's the email". The fence opens, the doc renders, the fence closes. End of response.
+2. **The block opens with `<!doctype html>`** as the first non-whitespace character inside the fence.
+3. **Email-client compatible.**
+   - All critical styling lives on each element as inline `style="..."` attributes — most clients strip `<style>` blocks. A `<style>` block in `<head>` is allowed as a fallback only.
+   - Use absolute `https://` URLs for all assets. Never relative paths.
+   - Provide a `<title>` that matches the subject line.
+   - Include a `<meta name="viewport" content="width=device-width, initial-scale=1">` and a `<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">` in `<head>`.
+4. **Resolve every brand-kit reference VERBATIM.**
+   - Colours: only hex codes from `palette.colors[].hex`. Never invent a value.
+   - Fonts: include the typography `cssImport` in `<head>` AND specify a web-safe inline fallback stack on every element using the brand font (`font-family: 'Feature Display', Georgia, serif`).
+   - Logos: only `logo.assets[].url` strings, absolute `https://` URLs.
+5. **Required structure.** Subject line as a comment at the top of the doc inside the fence: `<!-- Subject: ... -->` and `<!-- Preview: ... -->`. Then the document. Required body sections per `sections[]`: header logo, hero block, body, primary CTA, footer with unsubscribe + physical address.
+6. **Slot resolution.** Every `{{slot}}` filled. No Lorem Ipsum, no `<!-- TODO -->`, no `[address-here]` placeholders. If `physicalAddress` or `unsubscribeUrl` weren't supplied, ask for them — do not invent them.
+7. **Pre-return self-check.** Before finalising:
+   - First non-whitespace of response is the ```html fence.
+   - First non-whitespace inside the fence is `<!-- Subject: ... -->` followed by `<!-- Preview: ... -->` followed by `<!doctype html>`.
+   - Exactly one ```html fence pair in the response.
+   - Every colour hex appears in the brand kit palette.
+   - Every URL is `https://...` and points to either `logo.assets[].url` or a CTA URL the user supplied.
+   - Unsubscribe link present and points to the URL the user supplied.
+
+If you cannot satisfy all seven rules, do not return — ask the user for the missing input first.
+
+## Why HTML
+
+This template renders to a previewable artifact in Claude.ai (which adds an "Open in new tab" affordance for cross-checking layout in Safari) and a copy-paste-ready email document in Claude Desktop. Markdown output, prose summaries, or partial HTML break both surfaces.
 
 ## Resolution order for AI agents
 

@@ -913,11 +913,11 @@ function paletteTokens(palette?: Palette): PaletteTokens {
   const primary =
     byRole('primary')?.hex ??
     byNamePart('brand')?.hex ??
-    '#7c3aed';
+    '#0c0a09';
   const primaryTint =
     byRole('primary-tint')?.hex ??
     byNamePart('brand-50')?.hex ??
-    '#f5f3ff';
+    '#f5f5f4';
 
   return {
     background,

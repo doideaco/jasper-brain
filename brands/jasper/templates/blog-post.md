@@ -22,7 +22,7 @@ sections:
     guidance: |-
       Single outcome-led headline + subhead.
       • Optional eyebrow above headline using `caption` scale step (12px Inter 500, UPPERCASE, letter-spacing 0.04em, color Stone-500). Skip the eyebrow on most posts.
-      • Headline uses `display` step (72px / 1.05 / 700 / -0.025em) in typography/default role=primary (Inter). Color: Ink.
+      • Headline uses `display` step (72px / 1.05 / 300 / -0.02em) in typography/default role=display (Feature Display). Color: Ink.
       • Subhead uses `body-lg` (18px / 1.6 / 400) in role=primary (Inter). Color: Stone-700. One sentence, names the audience and the change.
       • Apply guideline/lead-with-outcome — first words must answer "what becomes true for me?", not "what does the product do?".
       • No image in the hero unless the post is photo-led.
@@ -73,7 +73,7 @@ sections:
   - name: Pull quote
     guidance: |-
       One per post maximum. Optional — skip on shorter posts.
-      • Style: display step at 48px italic, color palette token "Brand" (#7c3aed), border-left: 2px solid Brand, padding-left: 24px, margin: 32px 0.
+      • Style: display step at 48px italic, color palette token "Brand" (#FA4028), border-left: 2px solid Brand, padding-left: 24px, margin: 32px 0.
       • Source: if attributing to a person, set attributionPersonId and embed person.quote VERBATIM (don't paraphrase). Otherwise use a quote already present in the body — do not invent.
     tone: punchy
     lengthHint: 1–2 sentences
@@ -83,9 +83,9 @@ sections:
   - name: Mid-post CTA
     guidance: |-
       Optional inline CTA card, placed roughly two-thirds through the body.
-      • Card background: palette token "Brand-50" (#f5f3ff). Padding: 24px. Border-radius: 12px.
+      • Card background: palette token "Brand-50" (#FFE9E4). Padding: 24px. Border-radius: 12px.
       • Heading: `h3` step in role=primary (Inter 600), color "Brand".
-      • Button: filled with "Brand" (#7c3aed), text in "Surface" (#fafaf9), `body-sm` Inter 500, padding 8px 16px, rounded 6px. One CTA, one link.
+      • Button: filled with "Brand" (#FA4028), text in "Surface" (#fafaf9), `body-sm` Inter 500, padding 8px 16px, rounded 6px. One CTA, one link.
       • Headline copy is outcome-led per guideline/lead-with-outcome.
       • Apply guardrail/no-unverified-stats — no numeric claims in CTA copy.
     tone: confident
@@ -119,6 +119,32 @@ sections:
 
 # Blog post template — usage rules
 
+## Output contract (READ FIRST — non-negotiable)
+
+When invoked, you MUST return a single, complete, previewable HTML5 document. Nothing else.
+
+1. **Respond with EXACTLY one fenced ```html block.** No prose before, after, or between. No summary. No "here's the post". The fence opens, the doc renders, the fence closes. End of response.
+2. **The block opens with `<!doctype html>`** as the first non-whitespace character inside the fence.
+3. **Self-contained.** All CSS lives in a single `<style>` element in `<head>`. No external stylesheets except the typography `cssImport` (Google Fonts `<link>` is also fine in `<head>`).
+4. **Resolve every brand-kit reference VERBATIM.**
+   - Colours: only hex codes from `palette.colors[].hex`. Never invent a value, never approximate, never use a colour name without resolving the hex.
+   - Fonts: inline `typography.typefaces[].source.cssImport` in `<head>` exactly as provided. For self-hosted fonts (`source.files`), emit `@font-face` rules with the file URLs verbatim.
+   - Logos: only `logo.assets[].url` strings. Never construct `jasper.ai/...` or any other URL.
+5. **Slot resolution.** Every `{{slot}}` referenced in section guidance must be filled with real content. No `{{...}}` placeholders, no Lorem Ipsum, no `<!-- TODO -->` comments, no "[author name]" placeholders.
+6. **Pre-return self-check.** Before you finalise the response, verify:
+   - First three characters of your response are ` ``` ` (the fence).
+   - First non-whitespace inside the fence is `<!doctype html>`.
+   - Exactly one ```html opening fence and one closing fence in the entire response.
+   - Every `#xxxxxx` colour code in the document appears in the brand kit's palette.
+   - The `<head>` includes typography font loading.
+   - No `Lorem`, no `TODO`, no `placeholder`, no `[bracketed-instruction-text]` survives.
+
+If you cannot satisfy all six rules, do not return — ask the user for the missing input first.
+
+## Why HTML
+
+This template renders to a previewable artifact in Claude.ai (which adds an "Open in new tab" affordance) and a copy-paste-ready document in Claude Desktop. Markdown output, prose summaries, or fragmentary HTML defeat both.
+
 ## Resolution order for AI agents
 
 When an AI tool generates output from this template, resolve every reference against the live brand kit via MCP **before** rendering:
@@ -134,7 +160,7 @@ When an AI tool generates output from this template, resolve every reference aga
 - **One pull quote, one CTA.** Multiple of either dilutes both.
 - **No invented numbers.** Every numeric claim must be sourced from `knowledge` or `product` items, or removed. See `guardrail/no-unverified-stats`.
 - **Author is real.** The byline must reference an existing `person` item.
-- **Brand color is rationed.** "Brand" purple appears at most twice on the page (hero CTA + mid-post CTA, OR pull quote — not both).
+- **Brand color is rationed.** "Brand" red appears at most twice on the page (hero CTA + mid-post CTA, OR pull quote — not both).
 - **Voice non-negotiables.** Contractions on, "you" not "users", no exclamation marks, no banned vocabulary from `voice/default`.
 
 ## Variants

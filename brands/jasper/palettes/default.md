@@ -42,14 +42,14 @@ colors:
     use: Cards, panels, elevated surfaces on top of Surface.
 
   - name: Brand
-    hex: "#7c3aed"
+    hex: "#FA4028"
     role: primary
     use: Primary actions, key links, brand accents. Use sparingly — once per screen ideally.
     contrast:
       onLight: AA
 
   - name: Brand-50
-    hex: "#f5f3ff"
+    hex: "#FFE9E4"
     role: primary-tint
     use: Hover states, selected backgrounds, gentle brand emphasis.
 
@@ -71,7 +71,7 @@ colors:
 
 # Usage rules
 
-- **One brand color per screen.** Brand purple draws the eye — multiple uses dilute it. Pick the single most important action and own that color.
+- **One brand color per screen.** Brand red draws the eye — multiple uses dilute it. Pick the single most important action and own that color.
 - **Never pure white or pure black.** Ink (`#0c0a09`) and Surface (`#fafaf9`) read as deliberate. `#000000` and `#ffffff` read as default-CSS.
-- **Status colors are status-only.** Don't use Success green for a "marketing" accent. Don't use Brand purple for a confirmation toast.
+- **Status colors are status-only.** Don't use Success green for a "marketing" accent. Don't use Brand red for a confirmation toast.
 - **Borders are Stone-200 by default.** Reserve darker borders for emphasised regions (e.g., active form fields).

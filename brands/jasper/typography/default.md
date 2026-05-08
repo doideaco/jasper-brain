@@ -1,9 +1,18 @@
 ---
 id: default
 name: Jasper — default typography
-description: The everyday type system for Jasper marketing surfaces. Confident, clear, slightly editorial.
+description: The everyday type system for Jasper marketing surfaces. Editorial display face for headlines, neutral sans for everything else.
 tags: [primary]
 typefaces:
+  - family: Feature Display
+    role: display
+    stack: "'Feature Display', ui-serif, Georgia, 'Times New Roman', serif"
+    weights: [300]
+    source:
+      provider: self-hosted
+      files: []
+    use: Display headlines and hero type only. Light weight (300) is the only weight — its slim, editorial proportions are the brand voice in type form. Never use a heavier weight; never substitute another serif.
+
   - family: Inter
     role: primary
     stack: "Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
@@ -12,7 +21,7 @@ typefaces:
       provider: google-fonts
       url: https://fonts.google.com/specimen/Inter
       cssImport: "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');"
-    use: Everything — body, UI, marketing copy, headlines, eyebrows. Single-typeface system.
+    use: Body, UI, marketing copy, sub-headings (h2/h3), eyebrows.
 
   - family: JetBrains Mono
     role: mono
@@ -28,15 +37,15 @@ scale:
   - name: display
     fontSize: "72px"
     lineHeight: "1.05"
-    fontWeight: 700
-    letterSpacing: "-0.025em"
-    use: Hero headlines only.
+    fontWeight: 300
+    letterSpacing: "-0.02em"
+    use: Hero headlines only. Renders in Feature Display 300.
   - name: h1
     fontSize: "48px"
     lineHeight: "1.1"
-    fontWeight: 600
+    fontWeight: 300
     letterSpacing: "-0.02em"
-    use: Page titles.
+    use: Page titles. Renders in Feature Display 300.
   - name: h2
     fontSize: "32px"
     lineHeight: "1.15"
@@ -73,8 +82,9 @@ scale:
 
 # Usage rules
 
-- **Single typeface.** Inter handles everything from caption to display. Jasper does not pair display fonts.
-- **Weight does the work.** Display uses 700, headings 600, body 400. The difference between hierarchy levels is weight + size + tracking, not family.
+- **Two-typeface system.** Feature Display 300 for the top of the hierarchy (display, h1). Inter for everything from h2 down — body, UI, captions, eyebrows.
+- **Feature Display is 300-only.** Never request a heavier weight from Feature; the browser will synthesize fake bold and it looks wrong. If a section needs a heavier headline, use Inter h2 weight 600 instead.
+- **Inter does the weight work below the fold.** h2/h3 use Inter 600. Body 400. Caption 500.
+- **Letter-spacing tightens at scale.** Display and h1 use negative tracking (-0.02em). Body and below stay at 0.
 - **Never mix scales across surfaces.** A landing page uses display, h1, body — not h2 substituting for h1 because "the headline is shorter."
-- **Letter-spacing tightens at scale.** All display and h1 use negative tracking. Body and below stay at 0.
 - **Numerals are tabular** in any data context (pricing tables, dashboards, comparison cards). Use `font-variant-numeric: tabular-nums`.
