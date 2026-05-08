@@ -8,14 +8,19 @@ const repoRoot = path.resolve(here, '..', '..');
 
 const config: NextConfig = {
   outputFileTracingRoot: repoRoot,
-  // Include the seed `brands/` directory in every function bundle so
-  // both the /brands/import flow AND the boot-hook auto-sync (in
-  // instrumentation.ts) can read filesystem brands on Vercel. The
-  // glob applies to all routes; cost is small (markdown only).
+  // Include the seed `brands/` directory in EVERY function bundle so
+  // the boot-hook seed-sync, the data-migration code path, and the
+  // /brands/import action can all read filesystem brands at runtime.
+  //
+  // Next.js's `*` key wildcard wasn't reliable across all routes for
+  // us — the migration was silently skipping templates because
+  // findBrandsDir() returned null in the bundle that fired the boot
+  // hook. Explicit globs per route family make the intent unambiguous.
   outputFileTracingIncludes: {
-    '*': ['../../brands/**'],
-    '/brands/import': ['../../brands/**'],
-    '/brands/import/**': ['../../brands/**'],
+    '/': ['../../brands/**'],
+    '/api/(.*)': ['../../brands/**'],
+    '/brands/(.*)': ['../../brands/**'],
+    '/share/(.*)': ['../../brands/**'],
   },
   serverExternalPackages: ['@jasper-brain/core'],
   experimental: {

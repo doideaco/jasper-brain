@@ -150,19 +150,62 @@ export async function applyDataMigrations(
   for (const [templateId, marker] of Object.entries(
     TEMPLATE_SCAFFOLD_MARKERS,
   )) {
+    let dbItem;
     try {
-      const dbItem = await store.getArtifact(brandId, 'template', templateId);
-      if (dbItem.type !== 'template') continue;
-      const dbScaffold = dbItem.scaffold ?? '';
-      if (dbScaffold.includes(marker)) continue; // already up to date
+      dbItem = await store.getArtifact(brandId, 'template', templateId);
+    } catch (err) {
+      if (err instanceof Error && /not found/i.test(err.message)) {
+        // Template not in DB at all — seed-sync would have added it on
+        // add-only mode if the file existed. Skip silently.
+        continue;
+      }
+      errors.push(
+        `template/${templateId}: read failed: ${
+          err instanceof Error ? err.message : 'unknown'
+        }`,
+      );
+      continue;
+    }
 
-      const seed = await readSeedTemplate(brandId, templateId);
-      if (!seed || seed.type !== 'template' || !seed.scaffold) continue;
-      if (!seed.scaffold.includes(marker)) continue; // seed not yet updated
+    if (dbItem.type !== 'template') {
+      errors.push(`template/${templateId}: DB item has wrong type`);
+      continue;
+    }
 
-      // Patch the structural fields (scaffold, sections, body, format,
-      // renderAs) but PRESERVE every base field the user may have
-      // customised — id, name, description, tags, version, updatedAt.
+    const dbScaffold = dbItem.scaffold ?? '';
+    if (dbScaffold.includes(marker)) {
+      // Already up to date — silent skip.
+      continue;
+    }
+
+    const seed = await readSeedTemplate(brandId, templateId);
+    if (!seed) {
+      errors.push(
+        `template/${templateId}: seed file not reachable (check next.config outputFileTracingIncludes — brands/ may not be in this function's bundle)`,
+      );
+      continue;
+    }
+    if (seed.type !== 'template') {
+      errors.push(
+        `template/${templateId}: seed parsed as non-template (type=${seed.type})`,
+      );
+      continue;
+    }
+    if (!seed.scaffold) {
+      errors.push(`template/${templateId}: seed has no scaffold field`);
+      continue;
+    }
+    if (!seed.scaffold.includes(marker)) {
+      errors.push(
+        `template/${templateId}: marker not in seed scaffold (was the marker bumped without updating the seed?)`,
+      );
+      continue;
+    }
+
+    // Patch the structural fields (scaffold, sections, body, format,
+    // renderAs) but PRESERVE every base field the user may have
+    // customised — id, name, description, tags, version, updatedAt.
+    try {
       await store.putArtifact(brandId, {
         ...dbItem,
         scaffold: seed.scaffold,
@@ -175,17 +218,9 @@ export async function applyDataMigrations(
         `${brandId}/template/${templateId}: synced scaffold/sections/body from seed`,
       );
     } catch (err) {
-      // Template not in DB at all — that's fine; the seed-sync would have
-      // added it on add-only mode. Skip silently.
-      if (
-        err instanceof Error &&
-        /not found/i.test(err.message)
-      ) {
-        continue;
-      }
       errors.push(
-        `template/${templateId}: ${
-          err instanceof Error ? err.message : 'failed'
+        `template/${templateId}: putArtifact failed: ${
+          err instanceof Error ? err.message : 'unknown'
         }`,
       );
     }
