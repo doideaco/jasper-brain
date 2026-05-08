@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ImportButton } from '@/components/import-button';
+import { MigrationsButton } from '@/components/migrations-button';
 import { getStore, getStoreBackend } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -36,7 +37,14 @@ export default async function ImportPage() {
       </header>
 
       {backend === 'postgres' ? (
-        <ImportButton />
+        <>
+          <ImportButton />
+          <hr className="my-8 border-stone-200" />
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-stone-500 mb-3">
+            Data migrations
+          </h2>
+          <MigrationsButton />
+        </>
       ) : (
         <div className="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Active store is filesystem — there's no separate target to import
