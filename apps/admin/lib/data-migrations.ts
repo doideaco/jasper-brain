@@ -142,8 +142,9 @@ export async function applyDataMigrations(
     // First scaffold version uses the same .reveal-up motion class as
     // blog-post — that string in the seed scaffold is the upgrade marker.
     'product-landing-page': '.reveal-up',
-    // email-blast: bumped hero logo from 96px to 120px wide.
-    'email-blast': 'width="120"',
+    // email-blast: versioned scaffold comment as marker. Bump the date
+    // in the comment + here whenever the seed scaffold changes.
+    'email-blast': 'email-blast scaffold rev: 2026-05-08-feature-display-+-illustration',
   };
 
   for (const [templateId, marker] of Object.entries(
