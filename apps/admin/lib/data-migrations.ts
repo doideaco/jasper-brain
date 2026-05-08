@@ -138,6 +138,10 @@ export async function applyDataMigrations(
     'blog-post': 'header.bar img { height: 40px;',
     'pitch-deck': 'padding-top: clamp(96px, 12vw, 168px)',
     'talk-deck': 'padding-top: clamp(96px, 12vw, 168px)',
+    // product-landing-page: was a structure-only template (no scaffold).
+    // First scaffold version uses the same .reveal-up motion class as
+    // blog-post — that string in the seed scaffold is the upgrade marker.
+    'product-landing-page': '.reveal-up',
   };
 
   for (const [templateId, marker] of Object.entries(
