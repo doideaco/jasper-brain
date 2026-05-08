@@ -1,112 +1,23 @@
 /**
- * Next.js boot hook. Runs once per server instance on cold start.
+ * Next.js boot hook. Dispatches to a Node-runtime-only module that
+ * does the actual work (seed-sync + data-migrations).
  *
- * Auto-syncs filesystem seeds (under `brands/`) into Postgres in
- * add-only mode — i.e. inserts items that are in the seed but not
- * yet in the database, and never overwrites existing rows. This
- * means new templates / facets / items added in code land in the
- * deployed DB without anyone clicking the import button.
- *
- * Safety:
- *  - Add-only mode never overwrites a row that already exists, so
- *    hand-edited records (uploaded asset URLs, edited voice, etc.)
- *    are preserved.
- *  - In-process latch ensures the sync runs at most once per
- *    serverless function instance — subsequent requests on the
- *    same instance skip the work.
- *  - Errors are caught and logged; the server keeps booting.
- *  - Skipped entirely when DATABASE_URL isn't set (dev/filesystem
- *    backend) — the function inside also guards on this.
+ * This file MUST stay free of any imports that touch Node-only
+ * modules like postgres / fs / net / tls — Next.js's webpack
+ * traces this file for both the Node and Edge runtime bundles, and
+ * Edge can't resolve those imports. The dynamic import below is
+ * gated by NEXT_RUNTIME so the Node-only chain only loads on Node.
  */
 
-let synced = false;
+let registered = false;
 
 export async function register() {
-  // Only run on the Node runtime — not Edge.
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return;
+  if (registered) return;
+  registered = true;
 
-  // In-process latch: each serverless instance syncs once.
-  if (synced) return;
-  synced = true;
-
-  // Run in the background so the cold-start request isn't blocked.
-  // The work is small (per-id existence check, only inserts new
-  // rows) so it usually finishes before the first interactive
-  // request, but we don't want to block boot if Postgres is slow.
-  void runSync();
-}
-
-async function runSync() {
-  try {
-    const sha =
-      process.env.VERCEL_GIT_COMMIT_SHA ??
-      process.env.GIT_COMMIT_SHA ??
-      'local';
-    console.log(`[seed-sync] starting (commit ${sha.slice(0, 7)})`);
-
-    // Dynamic import so the seed-sync module isn't loaded into edge
-    // bundles or hot-reloaded dev contexts where it isn't needed.
-    const { syncSeedFromFilesystem } = await import('./lib/seed-sync');
-    const result = await syncSeedFromFilesystem('add-only');
-
-    if (!result.ok) {
-      console.warn(`[seed-sync] no-op: ${result.message}`);
-      return;
-    }
-
-    const added = result.items ?? 0;
-    const skipped = result.itemsSkipped ?? 0;
-    const facets = result.customFacets ?? 0;
-    const brands = result.brands ?? 0;
-    const errs = result.errors?.length ?? 0;
-
-    console.log(
-      `[seed-sync] done: ${brands} brand profiles, ${facets} custom facets, ${added} items added, ${skipped} preserved${
-        errs > 0 ? `, ${errs} errors` : ''
-      }`,
-    );
-    if (errs > 0) {
-      for (const e of result.errors ?? []) console.warn(`[seed-sync] ${e}`);
-    }
-
-    // Run targeted, idempotent data migrations alongside seed-sync.
-    // These patch fields touched by post-import schema/brand changes
-    // (e.g. rebrand colours, stale Tiempos refs) without overwriting
-    // entire records — preserving manual edits and asset URLs.
-    await runDataMigrations();
-  } catch (err) {
-    console.error(
-      '[seed-sync] failed:',
-      err instanceof Error ? err.message : err,
-    );
-  }
-}
-
-async function runDataMigrations() {
-  try {
-    const { getStore, getStoreBackend } = await import('./lib/store');
-    if (getStoreBackend() !== 'postgres') return;
-
-    const { applyDataMigrations } = await import('./lib/data-migrations');
-    const store = await getStore();
-    const brands = await store.listBrands();
-
-    for (const brand of brands) {
-      const result = await applyDataMigrations(store, brand.id);
-      if (result.applied.length > 0) {
-        console.log(
-          `[data-migrations] ${brand.id}: ${result.applied.length} applied`,
-        );
-        for (const m of result.applied) console.log(`[data-migrations]   ${m}`);
-      }
-      if (result.errors.length > 0) {
-        for (const e of result.errors) console.warn(`[data-migrations] ${brand.id}: ${e}`);
-      }
-    }
-  } catch (err) {
-    console.error(
-      '[data-migrations] failed:',
-      err instanceof Error ? err.message : err,
-    );
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // Node-runtime-only sub-module. Next.js's bundler treats this
+    // dynamic import as Node-only because of the runtime gate above.
+    await import('./instrumentation-node');
   }
 }
