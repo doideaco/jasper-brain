@@ -19,10 +19,35 @@ const PARSE_ERROR = -32700;
 const NOT_FOUND_ERROR = -32602;
 const INTERNAL_ERROR = -32603;
 
+const SERVER_INFO = { name: 'jasper-brain', version: '0.0.1' } as const;
+
+const SERVER_INSTRUCTIONS =
+  'Jasper Brain — single source of truth for brand context. ALWAYS call brain_get_brand_kit before authoring; never rely on prior turns. Slash-command prompts (/write, /render-template, /audit, /brief) auto-fetch fresh context.';
+
+const CAPABILITIES = {
+  tools: { listChanged: false },
+  prompts: { listChanged: false },
+} as const;
+
+/** CORS headers — allow Claude.ai and any browser-based MCP client. */
+const CORS_HEADERS = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, OPTIONS',
+  'access-control-allow-headers': 'Content-Type, Authorization, mcp-session-id',
+  'access-control-max-age': '86400',
+} as const;
+
+function withCors(res: NextResponse): NextResponse {
+  for (const [k, v] of Object.entries(CORS_HEADERS)) res.headers.set(k, v);
+  return res;
+}
+
 function rpcError(id: unknown, code: number, message: string, status = 200) {
-  return NextResponse.json(
-    { jsonrpc: '2.0', id: id ?? null, error: { code, message } },
-    { status },
+  return withCors(
+    NextResponse.json(
+      { jsonrpc: '2.0', id: id ?? null, error: { code, message } },
+      { status },
+    ),
   );
 }
 
@@ -33,6 +58,10 @@ function isResponseFor(message: unknown, id: unknown): boolean {
     'id' in message &&
     (message as { id: unknown }).id === id
   );
+}
+
+export async function OPTIONS() {
+  return withCors(new NextResponse(null, { status: 204 }));
 }
 
 export async function POST(
@@ -48,6 +77,37 @@ export async function POST(
     return rpcError(null, PARSE_ERROR, 'Invalid JSON');
   }
 
+  // ──────────────────────────────────────────────────────────────────
+  // FAST PATH — initialize / notifications/initialized
+  //
+  // The MCP handshake doesn't need the database, the McpServer instance,
+  // or the in-memory transport. Returning a canned response shaves a
+  // ~2.5s cold-start down to ~100ms, which keeps Claude Desktop's MCP
+  // startup probe well inside its connect-timeout window.
+  // ──────────────────────────────────────────────────────────────────
+  if (body.method === 'initialize') {
+    return withCors(
+      NextResponse.json({
+        jsonrpc: '2.0',
+        id: body.id ?? null,
+        result: {
+          protocolVersion: PROTOCOL_VERSION,
+          capabilities: CAPABILITIES,
+          serverInfo: SERVER_INFO,
+          instructions: SERVER_INSTRUCTIONS,
+        },
+      }),
+    );
+  }
+
+  if (body.method === 'notifications/initialized') {
+    return withCors(new NextResponse(null, { status: 204 }));
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // SLOW PATH — every other RPC method (tools/list, tools/call,
+  // prompts/list, prompts/get, etc.) needs the live store + server.
+  // ──────────────────────────────────────────────────────────────────
   const store = await getStore();
   try {
     await store.getBrand(brandId);
@@ -62,37 +122,15 @@ export async function POST(
   try {
     await server.connect(serverTransport);
 
-    // Auto-initialize so callers can hit any tool in a single POST without a
-    // prior handshake. This makes the endpoint stateless: every request
+    // Auto-initialize so callers can hit any tool in a single POST without
+    // a prior handshake. This makes the endpoint stateless: every request
     // gets a fresh server that is already past the init step.
     await primeInitialize(clientTransport);
-
-    if (body.method === 'initialize') {
-      // Caller wanted to init explicitly; reply with our handshake response.
-      return NextResponse.json({
-        jsonrpc: '2.0',
-        id: body.id ?? null,
-        result: {
-          protocolVersion: PROTOCOL_VERSION,
-          capabilities: {
-            tools: { listChanged: false },
-            prompts: { listChanged: false },
-          },
-          serverInfo: { name: 'jasper-brain', version: '0.0.1' },
-          instructions:
-            'Jasper Brain — single source of truth for brand context. ALWAYS call brain_get_brand_kit before authoring; never rely on prior turns. Slash-command prompts (/write, /render-template, /audit, /brief) auto-fetch fresh context.',
-        },
-      });
-    }
-
-    if (body.method === 'notifications/initialized') {
-      return new NextResponse(null, { status: 204 });
-    }
 
     // Notifications: send and return 204
     if (body.id === undefined) {
       await clientTransport.send(body as JSONRPCMessage);
-      return new NextResponse(null, { status: 204 });
+      return withCors(new NextResponse(null, { status: 204 }));
     }
 
     // Requests: send and wait for response with matching id
@@ -118,7 +156,7 @@ export async function POST(
     });
 
     const response = await responsePromise;
-    return NextResponse.json(response);
+    return withCors(NextResponse.json(response));
   } catch (err) {
     return rpcError(
       body.id,
@@ -134,12 +172,15 @@ export async function POST(
 }
 
 export function GET() {
-  return NextResponse.json({
-    name: 'jasper-brain',
-    transport: 'stateless-http',
-    protocolVersion: PROTOCOL_VERSION,
-    note: 'POST a JSON-RPC 2.0 message. The endpoint is stateless — call any tool in a single POST without a prior initialize handshake.',
-  });
+  return withCors(
+    NextResponse.json({
+      name: 'jasper-brain',
+      transport: 'stateless-http',
+      protocolVersion: PROTOCOL_VERSION,
+      capabilities: CAPABILITIES,
+      note: 'POST a JSON-RPC 2.0 message. The endpoint is stateless — call any tool in a single POST without a prior initialize handshake.',
+    }),
+  );
 }
 
 /**
