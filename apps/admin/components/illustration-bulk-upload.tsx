@@ -1,125 +1,122 @@
 'use client';
 
+import { upload } from '@vercel/blob/client';
 import { useRef, useState } from 'react';
-import {
-  bulkCreateIllustrations,
-  type BulkUploadResult,
-} from '@/app/actions/illustrations';
 
-const BATCH_BYTES_LIMIT = 3 * 1024 * 1024; // 3 MB per batch — stays under Vercel's 4.5MB POST cap.
-
-interface Progress {
-  totalFiles: number;
-  uploadedFiles: number;
-  createdItems: number;
-  currentBatch: number;
-  totalBatches: number;
-  errors: string[];
+interface FileStatus {
+  name: string;
+  status: 'queued' | 'uploading' | 'done' | 'error';
+  error?: string;
 }
 
-function chunkBySize(files: File[], maxBytes: number): File[][] {
-  const batches: File[][] = [];
-  let current: File[] = [];
-  let currentBytes = 0;
-  for (const f of files) {
-    // A single file bigger than the limit gets its own batch
-    if (f.size > maxBytes) {
-      if (current.length > 0) {
-        batches.push(current);
-        current = [];
-        currentBytes = 0;
-      }
-      batches.push([f]);
-      continue;
-    }
-    if (currentBytes + f.size > maxBytes && current.length > 0) {
-      batches.push(current);
-      current = [];
-      currentBytes = 0;
-    }
-    current.push(f);
-    currentBytes += f.size;
-  }
-  if (current.length > 0) batches.push(current);
-  return batches;
+const MAX_CONCURRENT = 4;
+const SUPPORTED_FORMATS = new Set([
+  'webp',
+  'png',
+  'svg',
+  'jpg',
+  'jpeg',
+  'gif',
+]);
+
+function formatFromExt(name: string): string | null {
+  const ext = name.split('.').pop()?.toLowerCase();
+  if (!ext) return null;
+  return SUPPORTED_FORMATS.has(ext) ? ext : null;
+}
+
+function safeFileName(name: string): string {
+  return name
+    .replace(/[^a-zA-Z0-9._-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 200);
 }
 
 export function IllustrationBulkUpload({ brandId }: { brandId: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [fileCount, setFileCount] = useState(0);
+  const [statuses, setStatuses] = useState<FileStatus[]>([]);
   const [isPending, setIsPending] = useState(false);
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [done, setDone] = useState<BulkUploadResult | null>(null);
+  const [done, setDone] = useState<{ ok: number; err: number } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fileList = inputRef.current?.files;
-    if (!fileList || fileList.length === 0) return;
+    const list = inputRef.current?.files;
+    if (!list || list.length === 0) return;
 
-    const files = Array.from(fileList);
-    const batches = chunkBySize(files, BATCH_BYTES_LIMIT);
-
+    const files = Array.from(list);
     setIsPending(true);
     setDone(null);
-    setProgress({
-      totalFiles: files.length,
-      uploadedFiles: 0,
-      createdItems: 0,
-      currentBatch: 0,
-      totalBatches: batches.length,
-      errors: [],
-    });
+    setStatuses(
+      files.map((f) => ({
+        name: f.name,
+        status: 'queued',
+      })),
+    );
 
-    let uploaded = 0;
-    let created = 0;
-    const errors: string[] = [];
+    let okCount = 0;
+    let errCount = 0;
 
-    for (let i = 0; i < batches.length; i++) {
-      const batch = batches[i];
-      const fd = new FormData();
-      fd.append('brandId', brandId);
-      for (const f of batch) fd.append('files', f);
-
-      try {
-        const result = await bulkCreateIllustrations(null, fd);
-        uploaded += result.uploaded ?? 0;
-        created += result.itemsCreated ?? 0;
-        if (result.errors) errors.push(...result.errors);
-        if (!result.ok && !result.errors) {
-          errors.push(`Batch ${i + 1}: ${result.message}`);
-        }
-      } catch (err) {
-        errors.push(
-          `Batch ${i + 1}: ${err instanceof Error ? err.message : 'failed'}`,
-        );
-      }
-
-      setProgress({
-        totalFiles: files.length,
-        uploadedFiles: uploaded,
-        createdItems: created,
-        currentBatch: i + 1,
-        totalBatches: batches.length,
-        errors,
+    // Bounded-concurrency pool: at most MAX_CONCURRENT uploads in flight.
+    let cursor = 0;
+    const updateStatus = (i: number, patch: Partial<FileStatus>) =>
+      setStatuses((prev) => {
+        const next = prev.slice();
+        next[i] = { ...next[i], ...patch };
+        return next;
       });
+
+    async function worker() {
+      while (true) {
+        const i = cursor++;
+        if (i >= files.length) return;
+        const file = files[i];
+        const format = formatFromExt(file.name);
+        if (!format) {
+          errCount += 1;
+          updateStatus(i, { status: 'error', error: 'unsupported format' });
+          continue;
+        }
+
+        updateStatus(i, { status: 'uploading' });
+        try {
+          const safe = safeFileName(file.name);
+          await upload(`brands/${brandId}/uploads/${safe}`, file, {
+            access: 'public',
+            handleUploadUrl: '/api/blob-upload-token',
+            clientPayload: JSON.stringify({
+              brandId,
+              fileName: file.name,
+              format,
+            }),
+          });
+          okCount += 1;
+          updateStatus(i, { status: 'done' });
+        } catch (err) {
+          errCount += 1;
+          updateStatus(i, {
+            status: 'error',
+            error: err instanceof Error ? err.message : 'upload failed',
+          });
+        }
+      }
     }
 
-    setIsPending(false);
-    setDone({
-      ok: created > 0,
-      message:
-        created > 0
-          ? `Uploaded ${uploaded} files and created ${created} illustration items across ${batches.length} batch${batches.length === 1 ? '' : 'es'}.`
-          : 'No illustrations were created.',
-      uploaded,
-      itemsCreated: created,
-      errors: errors.length > 0 ? errors : undefined,
-    });
+    await Promise.all(
+      Array.from({ length: Math.min(MAX_CONCURRENT, files.length) }, () =>
+        worker(),
+      ),
+    );
 
-    // Reset the input so the user can pick a different folder.
+    setIsPending(false);
+    setDone({ ok: okCount, err: errCount });
     if (inputRef.current) inputRef.current.value = '';
-    setFileCount(0);
   };
+
+  const totalCount = statuses.length;
+  const doneCount = statuses.filter(
+    (s) => s.status === 'done' || s.status === 'error',
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -131,83 +128,93 @@ export function IllustrationBulkUpload({ brandId }: { brandId: string }) {
           <input
             ref={inputRef}
             type="file"
-            name="files"
             multiple
             accept="image/webp,image/png,image/svg+xml,image/jpeg,image/gif"
-            onChange={(e) => setFileCount(e.target.files?.length ?? 0)}
             disabled={isPending}
+            onChange={() => {
+              setStatuses([]);
+              setDone(null);
+            }}
             className="block w-full text-sm text-stone-700 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-stone-900 file:text-white hover:file:bg-stone-800 file:cursor-pointer disabled:opacity-50"
           />
-          {fileCount > 0 && !isPending && (
-            <span className="block mt-2 text-xs text-stone-500">
-              {fileCount} file{fileCount === 1 ? '' : 's'} selected. Click upload to start.
-            </span>
-          )}
         </label>
 
         <button
           type="submit"
-          disabled={isPending || fileCount === 0}
+          disabled={isPending}
           className="rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:opacity-50"
         >
-          {isPending
-            ? `Uploading… (batch ${progress?.currentBatch ?? 0} / ${progress?.totalBatches ?? 0})`
-            : `Upload & create items (${fileCount})`}
+          {isPending ? `Uploading ${doneCount} / ${totalCount}…` : `Upload`}
         </button>
       </form>
 
       <p className="text-xs text-stone-500 max-w-2xl">
-        Files are uploaded in batches (each &lt; 3 MB) to stay under
-        Vercel&apos;s serverless POST cap. Each file becomes its own
-        Illustration item with the filename as the default name. Mood /
-        subject / pairsWith are left blank — fill them in by hand on each
-        item, or use the AI auto-tag button on the Illustrations list to
-        do it in bulk.
+        Files upload directly from your browser to Vercel Blob (bypassing the
+        function POST cap). Each one becomes its own Illustration item with the
+        filename as the default name. Mood / subject / pairsWith are left blank
+        — fill them in by hand on each item, or use the AI auto-tag button on
+        the Illustrations list to do it in bulk.
       </p>
 
-      {progress && isPending && (
-        <div className="rounded border border-stone-300 bg-stone-50 px-4 py-3 text-sm">
-          <div className="font-medium">
-            Batch {progress.currentBatch} of {progress.totalBatches} ·{' '}
-            {progress.createdItems} / {progress.totalFiles} items created
+      {totalCount > 0 && (
+        <div className="rounded border border-stone-200 bg-white">
+          <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+            <div className="font-medium text-sm">
+              {doneCount} / {totalCount} processed
+            </div>
+            {done && (
+              <div className="text-xs text-stone-500">
+                {done.ok} succeeded · {done.err} failed
+              </div>
+            )}
           </div>
-          <div className="w-full h-1 bg-stone-200 rounded mt-2 overflow-hidden">
-            <div
-              className="h-full bg-stone-900 transition-all"
-              style={{
-                width: `${(progress.createdItems / progress.totalFiles) * 100}%`,
-              }}
-            />
-          </div>
+          <ul className="divide-y divide-stone-100 max-h-80 overflow-y-auto">
+            {statuses.map((s, i) => (
+              <li
+                key={`${s.name}-${i}`}
+                className="px-4 py-2 flex items-center justify-between text-xs gap-3"
+              >
+                <span className="font-mono truncate flex-1" title={s.name}>
+                  {s.name}
+                </span>
+                <span
+                  className={`shrink-0 ${
+                    s.status === 'done'
+                      ? 'text-emerald-700'
+                      : s.status === 'error'
+                      ? 'text-red-700'
+                      : s.status === 'uploading'
+                      ? 'text-stone-700'
+                      : 'text-stone-400'
+                  }`}
+                >
+                  {s.status === 'done'
+                    ? '✓ uploaded'
+                    : s.status === 'error'
+                    ? `✗ ${s.error ?? 'failed'}`
+                    : s.status === 'uploading'
+                    ? 'uploading…'
+                    : 'queued'}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
-      {done && (
+      {done && !isPending && (
         <div
           className={`rounded border px-4 py-3 text-sm ${
-            done.ok
+            done.err === 0
               ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-              : 'border-red-300 bg-red-50 text-red-800'
+              : 'border-amber-300 bg-amber-50 text-amber-900'
           }`}
         >
-          <div className="font-medium">{done.message}</div>
-          {done.ok && (
-            <div className="text-xs mt-1.5 text-emerald-700">
-              {done.uploaded} uploaded, {done.itemsCreated} items created.
-            </div>
-          )}
-          {done.errors && done.errors.length > 0 && (
-            <details className="mt-2">
-              <summary className="text-xs cursor-pointer">
-                {done.errors.length} item-level errors
-              </summary>
-              <ul className="text-xs mt-1 space-y-0.5 font-mono max-h-64 overflow-y-auto">
-                {done.errors.map((err, i) => (
-                  <li key={i}>{err}</li>
-                ))}
-              </ul>
-            </details>
-          )}
+          <div className="font-medium">
+            {done.err === 0
+              ? `Uploaded ${done.ok} files. Item creation runs in the background — refresh the Illustrations list in a few seconds.`
+              : `Uploaded ${done.ok} of ${done.ok + done.err} files. ${done.err} failed — see the list above.`}
+          </div>
         </div>
       )}
     </div>

@@ -5,6 +5,11 @@ const isPublic = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/files/(.*)',
+  // Public so Vercel Blob's onUploadCompleted webhook can reach the
+  // route. The route enforces its own auth via requireUser() inside
+  // onBeforeGenerateToken, and handleUpload validates webhook payload
+  // signatures, so it's safe to skip Clerk here.
+  '/api/blob-upload-token',
   '/brands/(.*)/mcp',
   '/brands/(.*)/schema.json',
   '/brands/(.*)/llms.txt',
