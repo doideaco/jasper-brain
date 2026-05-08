@@ -53,15 +53,13 @@ export async function runDataMigrations(
     };
   }
 
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? 'local';
+
   // Direct env-var check rather than the cached getStoreBackend().
-  // Server actions can run in fresh function instances where the
-  // module-level cache hasn't been populated yet, even after we
-  // call getStore(). DATABASE_URL is the source of truth.
   if (!process.env.DATABASE_URL) {
     return {
       ok: false,
-      message:
-        'DATABASE_URL is not set in this function instance. Check Vercel project env vars (it must be available at runtime, not just at build).',
+      message: `[deploy ${sha}] DATABASE_URL is not set in this function instance. Check Vercel project env vars (it must be available at runtime, not just at build).`,
     };
   }
 
@@ -71,7 +69,7 @@ export async function runDataMigrations(
   } catch (err) {
     return {
       ok: false,
-      message: `getStore() threw: ${
+      message: `[deploy ${sha}] getStore() threw: ${
         err instanceof Error ? err.message : 'unknown error'
       }`,
     };
@@ -92,8 +90,8 @@ export async function runDataMigrations(
     ok: true,
     message:
       totalApplied > 0
-        ? `Applied ${totalApplied} migration${totalApplied === 1 ? '' : 's'} across ${brands.length} brand${brands.length === 1 ? '' : 's'}.`
-        : `No stale fields found across ${brands.length} brand${brands.length === 1 ? '' : 's'} — already up to date.`,
+        ? `[deploy ${sha}] Applied ${totalApplied} migration${totalApplied === 1 ? '' : 's'} across ${brands.length} brand${brands.length === 1 ? '' : 's'}.`
+        : `[deploy ${sha}] No stale fields found across ${brands.length} brand${brands.length === 1 ? '' : 's'} — already up to date.`,
     totalApplied,
     perBrand,
   };
