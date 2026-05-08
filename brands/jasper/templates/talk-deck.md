@@ -61,7 +61,7 @@ scaffold: |-
         transition: opacity 250ms ease;
       }
       .slide.active { opacity: 1; pointer-events: auto; }
-      .slide.cover { justify-content: center; align-items: flex-start; }
+      .slide.cover { justify-content: flex-start; align-items: flex-start; padding-top: clamp(96px, 12vw, 168px); }
       .eyebrow {
         font-family: var(--mono-family);
         font-size: 12px;
@@ -237,6 +237,49 @@ scaffold: |-
       }
       .notes p { opacity: 0.92; max-width: 80ch; }
       .notes p + p { margin-top: 8px; }
+
+      /* Slide-content reveal — staggered fade-up when a slide becomes active. */
+      .slide > * {
+        opacity: 0;
+        transform: translateY(14px);
+        transition:
+          opacity 600ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .slide.active > * { opacity: 1; transform: translateY(0); }
+      .slide.active > *:nth-child(1) { transition-delay: 0ms; }
+      .slide.active > *:nth-child(2) { transition-delay: 80ms; }
+      .slide.active > *:nth-child(3) { transition-delay: 160ms; }
+      .slide.active > *:nth-child(4) { transition-delay: 240ms; }
+      .slide.active > *:nth-child(5) { transition-delay: 320ms; }
+      /* Inner grids (pillars / stats / voices) also stagger their cards. */
+      .three-up > *, .stats > *, .voices > * {
+        opacity: 0;
+        transform: translateY(10px);
+        transition:
+          opacity 500ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .slide.active .three-up > *,
+      .slide.active .stats > *,
+      .slide.active .voices > * {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .slide.active .three-up > *:nth-child(2),
+      .slide.active .stats > *:nth-child(2),
+      .slide.active .voices > *:nth-child(2) { transition-delay: 200ms; }
+      .slide.active .three-up > *:nth-child(3),
+      .slide.active .stats > *:nth-child(3),
+      .slide.active .voices > *:nth-child(3) { transition-delay: 350ms; }
+      @media (prefers-reduced-motion: reduce) {
+        .slide > *,
+        .three-up > *, .stats > *, .voices > * {
+          transition: none;
+          transform: none;
+        }
+      }
+
       @media print {
         html, body { height: auto; overflow: visible; }
         .chrome, .notes { display: none; }

@@ -64,6 +64,20 @@ scaffold: |-
       footer.site .row { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; }
       footer.site a { color: #d6d3d1; text-decoration: none; }
       footer.site .copy { font-size: 12px; color: #a8a29e; margin-top: 16px; }
+
+      /* Scroll-triggered reveal. Elements get .reveal-up via JS at the end of body. */
+      .reveal-up {
+        opacity: 0;
+        transform: translateY(18px);
+        transition:
+          opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        will-change: opacity, transform;
+      }
+      .reveal-up.in-view { opacity: 1; transform: translateY(0); }
+      @media (prefers-reduced-motion: reduce) {
+        .reveal-up { transition: none; transform: none; opacity: 1; }
+      }
     </style>
   </head>
   <body>
@@ -121,6 +135,54 @@ scaffold: |-
       </div>
     </footer>
 
+    <script>
+      // Scroll-triggered reveal. Marks every meaningful section with
+      // .reveal-up; an IntersectionObserver flips them to .in-view as
+      // they enter the viewport. Respects prefers-reduced-motion.
+      (function () {
+        if (
+          typeof window === 'undefined' ||
+          !('IntersectionObserver' in window)
+        ) {
+          return;
+        }
+        var prefersReduced =
+          window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) return;
+
+        var selectors = [
+          '.hero h1.headline',
+          '.hero p.subhead',
+          '.hero .eyebrow',
+          '.byline',
+          '.lead',
+          'figure',
+          'article.body > *',
+          'blockquote.pullquote',
+          '.cta',
+          '.closing',
+          'footer.site .container > *'
+        ].join(', ');
+
+        var els = document.querySelectorAll(selectors);
+        for (var i = 0; i < els.length; i++) els[i].classList.add('reveal-up');
+
+        var io = new IntersectionObserver(
+          function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+              var e = entries[i];
+              if (e.isIntersecting) {
+                e.target.classList.add('in-view');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+        );
+        for (var j = 0; j < els.length; j++) io.observe(els[j]);
+      })();
+    </script>
   </body>
   </html>
 sections:
