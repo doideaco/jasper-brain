@@ -34,7 +34,7 @@ scaffold: |-
 
           <!-- Header logo -->
           <tr><td align="center" style="padding:32px 24px;">
-            <img src="{{logoUrl}}" alt="{{brandName}}" width="96" style="display:block;width:96px;height:auto;">
+            <img src="{{logoUrl}}" alt="{{brandName}}" width="120" style="display:block;width:120px;height:auto;">
           </td></tr>
 
           <!-- Hero illustration (OPTIONAL — remove this row if no illustration is appropriate) -->

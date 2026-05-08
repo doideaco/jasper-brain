@@ -96,7 +96,7 @@ scaffold: |-
         color: var(--stone-700);
         max-width: 60ch;
       }
-      .slide.cover img.logo { height: 48px; width: auto; margin-bottom: 64px; }
+      .slide.cover img.logo { height: 60px; width: auto; margin-bottom: 64px; }
       .slide.cover .tagline {
         font-family: var(--display-family);
         font-size: clamp(56px, 7vw, 120px);
