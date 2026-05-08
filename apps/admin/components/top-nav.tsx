@@ -17,14 +17,16 @@ export function TopNav({
   return (
     <header className="border-b border-stone-200 bg-white">
       <div className="mx-auto max-w-6xl px-6 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-2 group">
+        <Link href="/" className="flex items-center gap-2 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brainy.svg"
             alt="Brainy"
-            className="h-5 w-auto translate-y-[1px] group-hover:opacity-80 transition-opacity"
+            className="h-5 w-auto group-hover:opacity-80 transition-opacity"
           />
-          <span className="text-stone-400 font-normal text-sm">by Jasper</span>
+          <span className="text-stone-400 font-normal text-sm leading-none">
+            by Jasper
+          </span>
         </Link>
         <div className="flex items-center gap-4 text-sm">
           <SignedIn>
