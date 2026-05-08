@@ -68,9 +68,44 @@ async function runSync() {
     if (errs > 0) {
       for (const e of result.errors ?? []) console.warn(`[seed-sync] ${e}`);
     }
+
+    // Run targeted, idempotent data migrations alongside seed-sync.
+    // These patch fields touched by post-import schema/brand changes
+    // (e.g. rebrand colours, stale Tiempos refs) without overwriting
+    // entire records — preserving manual edits and asset URLs.
+    await runDataMigrations();
   } catch (err) {
     console.error(
       '[seed-sync] failed:',
+      err instanceof Error ? err.message : err,
+    );
+  }
+}
+
+async function runDataMigrations() {
+  try {
+    const { getStore, getStoreBackend } = await import('./lib/store');
+    if (getStoreBackend() !== 'postgres') return;
+
+    const { applyDataMigrations } = await import('./lib/data-migrations');
+    const store = await getStore();
+    const brands = await store.listBrands();
+
+    for (const brand of brands) {
+      const result = await applyDataMigrations(store, brand.id);
+      if (result.applied.length > 0) {
+        console.log(
+          `[data-migrations] ${brand.id}: ${result.applied.length} applied`,
+        );
+        for (const m of result.applied) console.log(`[data-migrations]   ${m}`);
+      }
+      if (result.errors.length > 0) {
+        for (const e of result.errors) console.warn(`[data-migrations] ${brand.id}: ${e}`);
+      }
+    }
+  } catch (err) {
+    console.error(
+      '[data-migrations] failed:',
       err instanceof Error ? err.message : err,
     );
   }
