@@ -133,7 +133,9 @@ export async function applyDataMigrations(
   // be customized; we don't want to step on it.
   // ───────────────────────────────────────────────────────────────────
   const TEMPLATE_SCAFFOLD_MARKERS: Record<string, string> = {
-    'blog-post': '.reveal-up',
+    // Bumped marker each time the seed scaffold changes meaningfully so
+    // the migration re-fires on the next cold start.
+    'blog-post': 'header.bar img { height: 40px;',
     'pitch-deck': 'padding-top: clamp(96px, 12vw, 168px)',
     'talk-deck': 'padding-top: clamp(96px, 12vw, 168px)',
   };

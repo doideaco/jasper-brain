@@ -36,7 +36,7 @@ scaffold: |-
       .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
       header.bar { padding: 24px 0; border-bottom: 1px solid var(--stone-200); }
       header.bar nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-      header.bar img { height: 28px; width: auto; }
+      header.bar img { height: 40px; width: auto; }
       .nav-links { display: flex; gap: 20px; font-size: 14px; color: var(--stone-700); }
       .nav-links a { text-decoration: none; }
       .nav-links a:hover { color: var(--ink); }
@@ -60,7 +60,7 @@ scaffold: |-
       .cta a.button { display: inline-block; background: var(--brand); color: var(--surface); font-size: 14px; font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: 6px; }
       .closing { padding: 32px 0 64px 0; font-size: 16px; line-height: 1.5; color: var(--ink); border-top: 1px solid var(--stone-200); max-width: 65ch; }
       footer.site { background: var(--ink); color: #d6d3d1; padding: 48px 0; }
-      footer.site img { height: 24px; width: auto; margin-bottom: 16px; }
+      footer.site img { height: 32px; width: auto; margin-bottom: 16px; }
       footer.site .row { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; }
       footer.site a { color: #d6d3d1; text-decoration: none; }
       footer.site .copy { font-size: 12px; color: #a8a29e; margin-top: 16px; }
