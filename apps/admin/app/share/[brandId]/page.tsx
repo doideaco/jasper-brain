@@ -651,7 +651,7 @@ ${typeCss}
           <div className="flex items-center gap-2 mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brainy.svg"
+              src="/brainy.svg?v=2"
               alt="Brainy"
               className="h-5 w-auto opacity-90"
             />
@@ -737,7 +737,7 @@ ${typeCss}
           <div className="flex items-center gap-2 opacity-70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brainy.svg"
+              src="/brainy.svg?v=2"
               alt="Brainy"
               className="h-4 w-auto"
             />

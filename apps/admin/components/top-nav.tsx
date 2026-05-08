@@ -20,7 +20,7 @@ export function TopNav({
         <Link href="/" className="flex items-center gap-2 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brainy.svg"
+            src="/brainy.svg?v=2"
             alt="Brainy"
             className="h-5 w-auto group-hover:opacity-80 transition-opacity"
           />
