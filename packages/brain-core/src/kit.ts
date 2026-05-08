@@ -58,6 +58,17 @@ export interface BrandKit {
     templates: BrandKitTemplateSummary[];
     knowledge: BrandKitItemSummary[];
     products: BrandKitItemSummary[];
+    /**
+     * Lightweight summary of the illustration library — just enough for
+     * the model to know it exists and how big it is. To actually pick
+     * an illustration, call brain_pick_illustration over MCP (it scores
+     * against mood/subject) rather than dumping every URL into the kit.
+     */
+    illustrations: {
+      count: number;
+      moods: string[];
+      subjects: string[];
+    };
   };
 }
 
@@ -124,6 +135,19 @@ export async function getBrandKit(
   const templates = items.filter((i): i is Template => i.type === 'template');
   const knowledge = items.filter((i) => i.type === 'knowledge');
   const products = items.filter((i) => i.type === 'product');
+  const illustrations = items.filter((i) => i.type === 'illustration');
+  const illustrationMoods = Array.from(
+    new Set(
+      illustrations.flatMap((i) => (i.type === 'illustration' ? i.mood : [])),
+    ),
+  ).sort();
+  const illustrationSubjects = Array.from(
+    new Set(
+      illustrations
+        .map((i) => (i.type === 'illustration' ? i.subject : undefined))
+        .filter((s): s is string => !!s),
+    ),
+  ).sort();
 
   return {
     brand,
@@ -148,6 +172,11 @@ export async function getBrandKit(
       })),
       knowledge: knowledge.map(summarise),
       products: products.map(summarise),
+      illustrations: {
+        count: illustrations.length,
+        moods: illustrationMoods,
+        subjects: illustrationSubjects,
+      },
     },
   };
 }

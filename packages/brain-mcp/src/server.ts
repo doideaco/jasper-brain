@@ -199,6 +199,80 @@ export function createBrainServer(options: ServerOptions): McpServer {
   );
 
   server.registerTool(
+    'brain_pick_illustration',
+    {
+      description:
+        "Pick illustrations from the brand's library that match a desired mood/subject. " +
+        'Returns up to N items with their asset URLs, mood tags, subject, use, and pairsWith. ' +
+        'Use when a template needs an illustration slot filled — pass the surface tone as ' +
+        'mood (e.g. "playful, energetic" for a launch email) and optionally a subject hint. ' +
+        'Always re-call rather than relying on prior results — the library changes between turns.',
+      inputSchema: {
+        brandId: z.string().optional(),
+        mood: z
+          .array(z.string())
+          .optional()
+          .describe(
+            'Mood tags to match (e.g. ["playful", "energetic"]). Items matching ANY mood score higher.',
+          ),
+        subject: z
+          .string()
+          .optional()
+          .describe('Subject hint (e.g. "abstract-geometric", "eye"). Loose match.'),
+        count: z
+          .number()
+          .int()
+          .positive()
+          .max(20)
+          .default(5)
+          .describe('Number of items to return (default 5, max 20).'),
+      },
+    },
+    async ({ brandId, mood, subject, count }) => {
+      const id = resolveBrand(brandId, fallbackBrand);
+      const items = await store.listArtifacts(id, { facetId: 'illustration' });
+      const illustrations = items.filter(
+        (i): i is Extract<typeof i, { type: 'illustration' }> =>
+          i.type === 'illustration' && i.assets.length > 0,
+      );
+
+      const moodLower = (mood ?? []).map((m) => m.toLowerCase());
+      const subjLower = subject?.toLowerCase();
+
+      const scored = illustrations.map((item) => {
+        let score = 0;
+        if (moodLower.length > 0) {
+          const itemMoods = item.mood.map((m) => m.toLowerCase());
+          for (const m of moodLower) if (itemMoods.includes(m)) score += 2;
+        }
+        if (subjLower && item.subject) {
+          if (item.subject.toLowerCase() === subjLower) score += 3;
+          else if (item.subject.toLowerCase().includes(subjLower)) score += 1;
+        }
+        // Tiny tiebreaker so untagged items still surface when no filters match.
+        score += Math.random() * 0.01;
+        return { item, score };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      const top = scored.slice(0, count ?? 5).map((s) => ({
+        id: s.item.id,
+        name: s.item.name,
+        description: s.item.description,
+        mood: s.item.mood,
+        subject: s.item.subject,
+        use: s.item.use,
+        pairsWith: s.item.pairsWith,
+        assets: s.item.assets,
+      }));
+
+      return {
+        content: [{ type: 'text', text: freshenedPayload(top) }],
+      };
+    },
+  );
+
+  server.registerTool(
     'brain_search',
     {
       description:

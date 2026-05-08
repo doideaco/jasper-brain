@@ -129,6 +129,19 @@ export const BUILT_IN_FACETS: Record<string, FacetDefinition> = {
     builtIn: true,
     itemFormat: 'file',
   },
+  illustration: {
+    id: 'illustration',
+    label: 'Illustration',
+    pluralLabel: 'Illustrations',
+    blurb:
+      'Editorial illustrations and graphics — used as hero imagery, section accents, and decorative spots.',
+    aiInstructions:
+      "Pick an illustration whose `mood` array aligns with the surface's tone (playful → playful, editorial → quiet/editorial). When the surface uses brand colours, prefer illustrations whose `pairsWith` includes those palette tokens. Use the asset URL verbatim in <img src> or CSS background-image. Respect `use` (Hero only / Inline / Section break — don't put a hero-scale illustration inline). NEVER edit the illustration; if none in the library fit, render the surface without one rather than substituting stock imagery.",
+    group: 'visual',
+    dir: 'illustrations',
+    builtIn: true,
+    itemFormat: 'file',
+  },
   knowledge: {
     id: 'knowledge',
     label: 'Knowledge',

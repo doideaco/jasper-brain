@@ -96,6 +96,11 @@ scaffold: |-
 
       <p class="lead">{{lead}}</p>
 
+      <!-- Hero illustration (OPTIONAL — remove the entire <figure> if no illustration fits) -->
+      <figure style="margin:32px 0;text-align:center;">
+        <img src="{{heroIllustrationUrl}}" alt="" style="max-width:480px;width:100%;height:auto;display:block;margin:0 auto;">
+      </figure>
+
       <article class="body">
         {{bodyHtml}}
       </article>
@@ -157,6 +162,24 @@ sections:
     lengthHint: two lines
     required: true
     slots: [authorPersonId, publishedAt]
+
+  - name: Hero illustration (optional)
+    guidance: |-
+      Optional editorial illustration that sits between the lead and the
+      body — sets the emotional register without being decorative noise.
+      Skip for posts that are purely informational (changelogs, security
+      notes, technical docs). Use for narrative posts (launches, opinions,
+      customer stories).
+      • {{heroIllustrationUrl}} = a URL from facet/illustration assets[].url.
+        Call brain_pick_illustration with mood matching the post's tone
+        (e.g. mood: ['quiet','editorial'] for a thoughtful piece, or
+        ['playful','energetic'] for a launch).
+      • If no illustration fits, REMOVE the entire <figure> from the
+        scaffold. Don't leave the placeholder URL.
+    tone: visual
+    lengthHint: image only
+    required: false
+    slots: [heroIllustrationUrl]
 
   - name: Lead paragraph
     guidance: |-

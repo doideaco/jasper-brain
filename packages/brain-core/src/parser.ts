@@ -5,6 +5,7 @@ import {
   Faq,
   Guardrail,
   Guideline,
+  Illustration,
   Knowledge,
   Logo,
   Palette,
@@ -92,6 +93,8 @@ export function parseArtifact(
       return Logo.parse(merged);
     case 'texture':
       return Texture.parse(merged);
+    case 'illustration':
+      return Illustration.parse(merged);
     case 'faq':
       return Faq.parse(merged);
     case 'custom': {

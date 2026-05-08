@@ -257,6 +257,8 @@ scaffold: |-
         <img class="logo" src="{{logoUrlLight}}" alt="{{brandName}}">
         <div class="topic">{{topicTitle}}</div>
         <div class="meta">{{occasion}}</div>
+        <!-- Optional cover accent illustration (top-right). REMOVE the entire <img> if no illustration fits. -->
+        <img src="{{coverIllustrationUrl}}" alt="" style="position:absolute;top:clamp(48px,6vw,96px);right:clamp(64px,9vw,144px);max-width:200px;height:auto;opacity:0.95;">
       </section>
 
       <section class="slide" data-notes="{{thesisNotes}}">
@@ -438,10 +440,11 @@ sections:
       • {{topicTitle}} = the topic of the talk in display type. Punchy, ≤8 words. Examples: "AI's stake in brand integrity.", "Why design tokens are political.", "The end of the persona slide."
       • {{occasion}} = audience + date eyebrow ("Industry summit · May 2026", "Internal kickoff · Q3", "Conference talk · Berlin").
       • {{coverNotes}} = optional speaker notes (use ` · ` between paragraphs).
+      • {{coverIllustrationUrl}} = OPTIONAL — a URL from facet/illustration assets[].url, picked via brain_pick_illustration with mood matching the talk's register. Sits top-right at ~200px max. If no illustration fits, REMOVE the entire <img> from the scaffold rather than leaving a placeholder.
     tone: confident, plain
     lengthHint: title ≤8 words; occasion ≤8 words
     required: true
-    slots: [logoUrlLight, topicTitle, occasion, coverNotes]
+    slots: [logoUrlLight, topicTitle, occasion, coverNotes, coverIllustrationUrl]
 
   - name: Thesis
     guidance: |-

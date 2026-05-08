@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { IllustrationsAutoTagButton } from '@/components/illustrations-auto-tag-button';
 import { getStore } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -40,13 +41,41 @@ export default async function FacetListPage({
             <p className="text-stone-600 mt-2 max-w-2xl">{facet.blurb}</p>
           )}
         </div>
-        <Link
-          href={`/brands/${brandId}/${facetId}/new`}
-          className="rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800 shrink-0"
-        >
-          + New {facet.label.toLowerCase()}
-        </Link>
+        <div className="flex items-start gap-2 shrink-0">
+          {facetId === 'illustration' && (
+            <Link
+              href={`/brands/${brandId}/${facetId}/bulk-upload`}
+              className="rounded border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-900 hover:bg-stone-50"
+            >
+              Bulk upload
+            </Link>
+          )}
+          <Link
+            href={`/brands/${brandId}/${facetId}/new`}
+            className="rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            + New {facet.label.toLowerCase()}
+          </Link>
+        </div>
       </header>
+
+      {facetId === 'illustration' && items.length > 0 && (
+        <div className="mb-6 rounded-lg border border-stone-200 bg-white p-4">
+          <div className="text-xs uppercase tracking-wide text-stone-500 font-semibold mb-2">
+            AI auto-tag
+          </div>
+          <p className="text-sm text-stone-600 mb-3 max-w-2xl">
+            Run a vision model over each illustration and auto-fill its{' '}
+            <code className="text-xs bg-stone-100 px-1 rounded">mood</code>,{' '}
+            <code className="text-xs bg-stone-100 px-1 rounded">subject</code>,{' '}
+            <code className="text-xs bg-stone-100 px-1 rounded">use</code>, and{' '}
+            <code className="text-xs bg-stone-100 px-1 rounded">pairsWith</code>.
+            Idempotent — defaults to only tagging items that don&apos;t already
+            have a mood set.
+          </p>
+          <IllustrationsAutoTagButton brandId={brandId} />
+        </div>
+      )}
 
       {facet.aiInstructions && (
         <details className="mb-6 rounded-lg border border-stone-200 bg-white">

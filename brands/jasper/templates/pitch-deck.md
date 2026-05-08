@@ -257,6 +257,8 @@ scaffold: |-
         <img class="logo" src="{{logoUrlLight}}" alt="{{brandName}}">
         <div class="tagline">{{tagline}}</div>
         <div class="meta">{{deckOccasion}}</div>
+        <!-- Optional cover accent illustration (top-right). REMOVE the entire <img> if no illustration fits. -->
+        <img src="{{coverIllustrationUrl}}" alt="" style="position:absolute;top:clamp(48px,6vw,96px);right:clamp(64px,9vw,144px);max-width:200px;height:auto;opacity:0.95;">
       </section>
 
       <section class="slide" data-notes="{{missionNotes}}">
@@ -438,10 +440,11 @@ sections:
       • {{tagline}} = a punchy headline. Pull from brand.tagline if it lands, otherwise compose one in voice/default.
       • {{deckOccasion}} = a short eyebrow line — investor stage + month/year, or audience + meeting.
       • {{coverNotes}} = optional speaker notes (use ` · ` between paragraphs).
+      • {{coverIllustrationUrl}} = OPTIONAL — a URL from facet/illustration assets[].url, picked via brain_pick_illustration with mood matching the deck tone. Sits top-right at ~200px max. If no illustration fits the moment (or the cover is busy enough already), REMOVE the entire <img> from the scaffold rather than leaving a placeholder.
     tone: confident, plain
     lengthHint: tagline ≤10 words; occasion ≤8 words
     required: true
-    slots: [logoUrlLight, tagline, deckOccasion, coverNotes]
+    slots: [logoUrlLight, tagline, deckOccasion, coverNotes, coverIllustrationUrl]
 
   - name: Mission
     guidance: |-

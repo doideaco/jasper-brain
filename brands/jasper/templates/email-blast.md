@@ -37,6 +37,11 @@ scaffold: |-
             <img src="{{logoUrl}}" alt="{{brandName}}" width="96" style="display:block;width:96px;height:auto;">
           </td></tr>
 
+          <!-- Hero illustration (OPTIONAL — remove this row if no illustration is appropriate) -->
+          <tr><td align="center" style="padding:0 24px 16px 24px;">
+            <img src="{{heroIllustrationUrl}}" alt="" style="display:block;max-width:280px;width:100%;height:auto;margin:0 auto;">
+          </td></tr>
+
           <!-- Hero block -->
           <tr><td style="padding:0 24px 16px 24px;">
             <h1 style="margin:0 0 12px 0;font-family:'Feature Display',Georgia,serif;font-size:48px;line-height:1.1;font-weight:300;letter-spacing:-0.02em;color:#0c0a09;" class="ink">{{headline}}</h1>
@@ -112,6 +117,23 @@ sections:
     lengthHint: layout only
     required: true
     slots: []
+
+  - name: Hero illustration (optional)
+    guidance: |-
+      Optional — an editorial illustration above the headline that sets the
+      emotional register before the reader gets to the words. Only include if
+      the email's tone calls for it (launch, celebration, content drop). Skip
+      for transactional / lifecycle emails (deliverability + clarity wins).
+      • {{heroIllustrationUrl}} = a URL from facet/illustration assets[].url.
+        Pick by calling brain_pick_illustration with mood matching the email
+        tone (e.g. mood: ['playful','energetic'] for a launch announcement).
+      • If you can't find a fitting illustration, REMOVE the entire <tr>
+        containing {{heroIllustrationUrl}} from the scaffold rather than
+        leaving a placeholder or substituting stock imagery.
+    tone: visual
+    lengthHint: image only
+    required: false
+    slots: [heroIllustrationUrl]
 
   - name: Hero block
     guidance: |-

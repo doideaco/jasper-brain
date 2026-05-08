@@ -4,6 +4,7 @@ import {
   Faq,
   Guardrail,
   Guideline,
+  Illustration,
   Knowledge,
   Logo,
   Palette,
@@ -54,6 +55,8 @@ export function parseArtifactForm(facet: FacetDefinition, fd: FormData): Artifac
       return parseLogo(fd);
     case 'texture':
       return parseTexture(fd);
+    case 'illustration':
+      return parseIllustration(fd);
     case 'faq':
       return parseFaq(fd);
     default:
@@ -218,6 +221,19 @@ function parseLogo(fd: FormData): Logo {
     assets: getYaml(fd, 'assets') ?? [],
     clearSpace: getString(fd, 'clearSpace'),
     minSize: getString(fd, 'minSize'),
+    body: getString(fd, 'body'),
+  });
+}
+
+function parseIllustration(fd: FormData): Illustration {
+  return Illustration.parse({
+    type: 'illustration',
+    ...baseFields(fd),
+    assets: getYaml(fd, 'assets') ?? [],
+    mood: splitTags(fd.get('mood')),
+    subject: getString(fd, 'subject'),
+    use: getString(fd, 'use'),
+    pairsWith: splitTags(fd.get('pairsWith')),
     body: getString(fd, 'body'),
   });
 }

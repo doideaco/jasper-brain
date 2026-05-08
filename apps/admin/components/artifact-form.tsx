@@ -453,6 +453,54 @@ function TypeSpecificFields({
     return <TextureEditor defaultValue={a} />;
   }
 
+  if (type === 'illustration') {
+    const a = artifact?.type === 'illustration' ? artifact : undefined;
+    return (
+      <>
+        <YamlField
+          name="assets"
+          label="Assets (YAML)"
+          rows={6}
+          defaultValue={toYaml(a?.assets)}
+          hint='Array of {format, url, width, height, background}. Format is "webp" / "png" / "svg" / "jpg". URL points at the uploaded blob.'
+        />
+        <TagsField
+          name="mood"
+          label="Mood / vibe"
+          defaultValue={a?.mood}
+          hint='Comma-separated. e.g. "playful, energetic, abstract" or "quiet, editorial, sparse". The model uses these to match an illustration to the surface tone.'
+        />
+        <TextField
+          name="subject"
+          label="Subject"
+          placeholder="e.g. eye, flower, sunburst, abstract-geometric"
+          hint="Single concept, lowercase. What the illustration depicts."
+          defaultValue={a?.subject}
+        />
+        <TextField
+          name="use"
+          label="Use"
+          placeholder="e.g. Hero only / Inline accent / Section break"
+          hint="Tells the model where this illustration belongs."
+          defaultValue={a?.use}
+        />
+        <TagsField
+          name="pairsWith"
+          label="Pairs with palette tokens"
+          defaultValue={a?.pairsWith}
+          hint='Comma-separated palette token names that work alongside this illustration. e.g. "Brand, Brand-50".'
+        />
+        <TextArea
+          name="body"
+          label="Notes (markdown)"
+          rows={3}
+          hint="Optional context. Not surfaced to AI tools."
+          defaultValue={a?.body}
+        />
+      </>
+    );
+  }
+
   if (type === 'faq') {
     const a = artifact?.type === 'faq' ? artifact : undefined;
     return (

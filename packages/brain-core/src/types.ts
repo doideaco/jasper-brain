@@ -14,6 +14,7 @@ export const ARTIFACT_TYPES = [
   'palette',
   'logo',
   'texture',
+  'illustration',
   'faq',
   'custom',
 ] as const;
@@ -312,6 +313,42 @@ export const Faq = z.object({
 });
 export type Faq = z.infer<typeof Faq>;
 
+export const IllustrationAsset = z.object({
+  format: z.enum(['webp', 'png', 'svg', 'jpg', 'jpeg', 'gif']),
+  url: z.string(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  background: z.enum(['light', 'dark', 'either']).default('either'),
+});
+export type IllustrationAsset = z.infer<typeof IllustrationAsset>;
+
+export const Illustration = z.object({
+  type: z.literal('illustration'),
+  ...baseArtifactFields,
+  assets: z.array(IllustrationAsset).default([]),
+  /**
+   * Mood / vibe descriptors. Use these to match an illustration to the
+   * tone of the surface it appears on (e.g. ['playful', 'energetic']
+   * or ['quiet', 'editorial']). Free-form, but consistency across the
+   * library is what makes the AI tag-and-match flow useful.
+   */
+  mood: z.array(z.string()).default([]),
+  /**
+   * What the illustration depicts. Single concept, lowercase.
+   * Examples: 'eye', 'flower', 'abstract-geometric', 'sunburst'.
+   */
+  subject: z.string().optional(),
+  /** When (and when not) to use this illustration. */
+  use: z.string().optional(),
+  /**
+   * Palette token names that pair well with this illustration —
+   * surfaces this for templates that need to colour-coordinate.
+   */
+  pairsWith: z.array(z.string()).default([]),
+  body: z.string().optional(),
+});
+export type Illustration = z.infer<typeof Illustration>;
+
 export const CustomItem = z.object({
   type: z.literal('custom'),
   facetId: z.string().min(1),
@@ -335,6 +372,7 @@ export const Artifact = z.discriminatedUnion('type', [
   Palette,
   Logo,
   Texture,
+  Illustration,
   Faq,
   CustomItem,
 ]);
@@ -387,5 +425,6 @@ export const ARTIFACT_DIRS: Record<Exclude<ArtifactType, 'custom'>, string> = {
   palette: 'palettes',
   logo: 'logos',
   texture: 'textures',
+  illustration: 'illustrations',
   faq: 'faqs',
 };
