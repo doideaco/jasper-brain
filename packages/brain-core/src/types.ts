@@ -75,11 +75,46 @@ export const TemplateSection = z.object({
 });
 export type TemplateSection = z.infer<typeof TemplateSection>;
 
+/**
+ * How a template's output is intended to be consumed.
+ *
+ * - `html-document`: A complete `<!doctype html>` document with embedded CSS.
+ *   Triggers Claude.ai's HTML artifact preview ("Open in new tab" → browser).
+ * - `html-email`: A complete HTML email document — inlined styles, absolute
+ *   asset URLs, plain-text fallback expected.
+ * - `html-fragment`: A snippet of HTML meant to be embedded in a larger
+ *   document (no `<html>`, `<head>`, or `<body>`).
+ * - `markdown`: Plain markdown output. Used for content-only templates
+ *   that do not enforce visual rendering.
+ */
+export const TemplateRenderAs = z.enum([
+  'html-document',
+  'html-email',
+  'html-fragment',
+  'markdown',
+]);
+export type TemplateRenderAs = z.infer<typeof TemplateRenderAs>;
+
 export const Template = z.object({
   type: z.literal('template'),
   ...baseArtifactFields,
   format: z.string(),
+  /**
+   * Output format the model should produce. The playground and any MCP-
+   * grounded consumer should switch into the matching strict-output mode
+   * when this template is invoked.
+   */
+  renderAs: TemplateRenderAs.default('html-document'),
   sections: z.array(TemplateSection),
+  /**
+   * Optional literal HTML/markdown skeleton with `{{slotName}}` placeholders
+   * that match `sections[].slots[]`. When present, the model fills the slots
+   * in this exact structure rather than constructing the document from
+   * scratch — significantly higher reliability for complex layouts (notably
+   * email, where inline styles + dark mode + RFC 8058 unsubscribe are easy
+   * to miss).
+   */
+  scaffold: z.string().optional(),
   body: z.string().optional(),
 });
 export type Template = z.infer<typeof Template>;

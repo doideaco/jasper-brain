@@ -196,12 +196,32 @@ function TypeSpecificFields({
           hint='e.g. "email", "landing-page"'
           defaultValue={a?.format}
         />
+        <SelectField
+          name="renderAs"
+          label="Render as"
+          defaultValue={a?.renderAs ?? 'html-document'}
+          hint="Output mode the model produces when this template is invoked. html-document and html-email trigger Claude.ai's previewable artifact (with 'Open in new tab' → browser)."
+          options={[
+            { value: 'html-document', label: 'HTML document — single <!doctype html> file (artifact-previewable)' },
+            { value: 'html-email', label: 'HTML email — inline styles, absolute URLs, plain-text fallback' },
+            { value: 'html-fragment', label: 'HTML fragment — snippet for embedding (no <html>/<body>)' },
+            { value: 'markdown', label: 'Markdown — content-only, no enforced visual rendering' },
+          ]}
+        />
         <YamlField
           name="sections"
           label="Sections (YAML)"
           rows={16}
           defaultValue={toYaml(a?.sections)}
           hint="Array of objects with name, guidance, tone, lengthHint, required, slots."
+        />
+        <TextArea
+          name="scaffold"
+          label="Scaffold (optional literal HTML/markdown skeleton)"
+          rows={20}
+          monospace
+          defaultValue={a?.scaffold}
+          hint="A complete document skeleton with {{slotName}} placeholders matching sections[].slots[]. When provided, the model fills the slots in this exact structure instead of constructing the document from scratch — much more reliable for emails (inline styles, dark mode, RFC 8058 unsubscribe). Leave empty to let the model derive structure from sections."
         />
         <TextArea
           name="body"

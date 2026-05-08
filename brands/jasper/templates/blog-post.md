@@ -3,7 +3,121 @@ id: blog-post
 name: Blog post
 description: Editorial blog post for the Jasper marketing site. References the canonical brand voice, typography, palette, logos, guidelines, and guardrails.
 format: blog-post
+renderAs: html-document
 tags: [web, editorial, marketing]
+scaffold: |-
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{title}} — {{brandName}}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    {{typographyHeadCss}}
+    <style>
+      :root {
+        --ink: #0c0a09;
+        --stone-700: #44403c;
+        --stone-500: #78716c;
+        --stone-200: #e7e5e4;
+        --stone-100: #f5f5f4;
+        --surface: #fafaf9;
+        --card: #ffffff;
+        --brand: #FA4028;
+        --brand-50: #FFE9E4;
+        --display-family: 'Feature Display', Georgia, 'Times New Roman', serif;
+        --body-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        --mono-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--surface); color: var(--ink); font-family: var(--body-family); font-size: 16px; line-height: 1.5; }
+      a { color: inherit; }
+      .container { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+      header.bar { padding: 24px 0; border-bottom: 1px solid var(--stone-200); }
+      header.bar nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      header.bar img { height: 28px; width: auto; }
+      .nav-links { display: flex; gap: 20px; font-size: 14px; color: var(--stone-700); }
+      .nav-links a { text-decoration: none; }
+      .nav-links a:hover { color: var(--ink); }
+      .hero { padding: 80px 0 48px 0; }
+      .eyebrow { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--stone-500); margin: 0 0 16px 0; }
+      h1.headline { font-family: var(--display-family); font-size: 72px; line-height: 1.05; font-weight: 300; letter-spacing: -0.02em; margin: 0 0 24px 0; color: var(--ink); }
+      .subhead { font-size: 18px; line-height: 1.6; font-weight: 400; color: var(--stone-700); margin: 0; }
+      .byline { display: flex; align-items: center; gap: 12px; padding: 24px 0; border-bottom: 1px solid var(--stone-200); }
+      .byline img { width: 40px; height: 40px; border-radius: 9999px; object-fit: cover; }
+      .byline .author { font-size: 14px; font-weight: 500; color: var(--ink); }
+      .byline .meta { font-size: 14px; color: var(--stone-500); }
+      .lead { font-size: 18px; line-height: 1.6; padding: 32px 0; margin: 0; color: var(--ink); max-width: 65ch; }
+      article.body { padding: 16px 0 40px 0; max-width: 65ch; }
+      article.body p { font-size: 16px; line-height: 1.5; margin: 0 0 16px 0; color: var(--ink); }
+      article.body h2 { font-family: var(--body-family); font-size: 32px; line-height: 1.15; font-weight: 600; letter-spacing: -0.015em; margin: 32px 0 16px 0; color: var(--ink); }
+      article.body h3 { font-family: var(--body-family); font-size: 24px; line-height: 1.25; font-weight: 600; margin: 24px 0 12px 0; color: var(--ink); }
+      article.body code { font-family: var(--mono-family); font-size: 14px; background: var(--stone-100); color: var(--stone-700); padding: 1.5px 4px; border-radius: 3px; }
+      blockquote.pullquote { font-family: var(--display-family); font-size: 48px; line-height: 1.15; font-weight: 300; font-style: italic; color: var(--brand); border-left: 2px solid var(--brand); padding-left: 24px; margin: 48px 0; }
+      .cta { background: var(--brand-50); padding: 24px; border-radius: 12px; margin: 48px 0; }
+      .cta h3 { font-family: var(--body-family); font-size: 24px; font-weight: 600; color: var(--brand); margin: 0 0 12px 0; }
+      .cta a.button { display: inline-block; background: var(--brand); color: var(--surface); font-size: 14px; font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: 6px; }
+      .closing { padding: 32px 0 64px 0; font-size: 16px; line-height: 1.5; color: var(--ink); border-top: 1px solid var(--stone-200); max-width: 65ch; }
+      footer.site { background: var(--ink); color: #d6d3d1; padding: 48px 0; }
+      footer.site img { height: 24px; width: auto; margin-bottom: 16px; }
+      footer.site .row { display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; }
+      footer.site a { color: #d6d3d1; text-decoration: none; }
+      footer.site .copy { font-size: 12px; color: #a8a29e; margin-top: 16px; }
+    </style>
+  </head>
+  <body>
+
+    <header class="bar">
+      <div class="container">
+        <nav>
+          <img src="{{logoUrlLight}}" alt="{{brandName}}">
+          <div class="nav-links">{{navLinks}}</div>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="container">
+        {{eyebrowBlock}}
+        <h1 class="headline">{{headline}}</h1>
+        <p class="subhead">{{subhead}}</p>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="byline">
+        <img src="{{authorImageUrl}}" alt="{{authorName}}">
+        <div>
+          <div class="author">{{authorName}}</div>
+          <div class="meta">{{authorRole}} · {{publishedAt}}</div>
+        </div>
+      </div>
+
+      <p class="lead">{{lead}}</p>
+
+      <article class="body">
+        {{bodyHtml}}
+      </article>
+
+      {{pullQuoteBlock}}
+
+      {{midPostCtaBlock}}
+
+      <p class="closing">{{closing}}</p>
+    </div>
+
+    <footer class="site">
+      <div class="container">
+        <img src="{{logoUrlDark}}" alt="{{brandName}}">
+        <div class="row">{{footerLinks}}</div>
+        <p class="copy">{{copyright}}</p>
+        {{legalDisclaimer}}
+      </div>
+    </footer>
+
+  </body>
+  </html>
 sections:
   - name: Header
     guidance: |-

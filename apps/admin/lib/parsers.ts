@@ -109,11 +109,15 @@ function parseSkill(fd: FormData): Skill {
 
 function parseTemplate(fd: FormData): Template {
   const sections = getYaml<unknown[]>(fd, 'sections');
+  const renderAsRaw = getString(fd, 'renderAs');
+  const scaffoldRaw = getString(fd, 'scaffold');
   return Template.parse({
     type: 'template',
     ...baseFields(fd),
     format: requireString(fd, 'format'),
+    renderAs: renderAsRaw && renderAsRaw.length > 0 ? renderAsRaw : undefined,
     sections: sections ?? [],
+    scaffold: scaffoldRaw && scaffoldRaw.length > 0 ? scaffoldRaw : undefined,
     body: getString(fd, 'body'),
   });
 }

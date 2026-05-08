@@ -3,7 +3,81 @@ id: email-blast
 name: Email blast
 description: Marketing email for the Jasper subscriber list — launches, announcements, content drops. References the canonical brand voice, type, palette, and logo, and respects email-client constraints.
 format: email
+renderAs: html-email
 tags: [email, lifecycle, marketing]
+scaffold: |-
+  <!-- Subject: {{subject}} -->
+  <!-- Preview: {{preview}} -->
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{subject}}</title>
+    <style>
+      /* Fallback only — most clients strip <style>. Inline styles below do the work. */
+      @media (prefers-color-scheme: dark) {
+        body { background: #0c0a09 !important; }
+        .surface { background: #0c0a09 !important; }
+        .ink { color: #fafaf9 !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#fafaf9;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+    <!-- Preview-text spacer (hidden but used by Gmail/iOS Mail) -->
+    <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">{{preview}}</div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fafaf9;" class="surface">
+      <tr><td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+          <!-- Header logo -->
+          <tr><td align="center" style="padding:32px 24px;">
+            <img src="{{logoUrl}}" alt="{{brandName}}" width="96" style="display:block;width:96px;height:auto;">
+          </td></tr>
+
+          <!-- Hero block -->
+          <tr><td style="padding:0 24px 16px 24px;">
+            <h1 style="margin:0 0 12px 0;font-family:'Feature Display',Georgia,serif;font-size:48px;line-height:1.1;font-weight:300;letter-spacing:-0.02em;color:#0c0a09;" class="ink">{{headline}}</h1>
+            <p style="margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:18px;line-height:1.6;font-weight:400;color:#44403c;">{{subhead}}</p>
+          </td></tr>
+
+          <!-- Body -->
+          <tr><td style="padding:24px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:16px;line-height:1.5;color:#0c0a09;" class="ink">
+            {{bodyHtml}}
+          </td></tr>
+
+          <!-- Primary CTA -->
+          <tr><td align="center" style="padding:16px 24px 32px 24px;">
+            <a href="{{ctaUrl}}" style="display:inline-block;background:#FA4028;color:#fafaf9;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:16px;font-weight:500;text-decoration:none;padding:12px 24px;border-radius:999px;">{{ctaLabel}}</a>
+            <p style="margin:16px 0 0 0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:14px;color:#78716c;">
+              Or follow this link: <a href="{{ctaUrl}}" style="color:#FA4028;">{{ctaUrl}}</a>
+            </p>
+          </td></tr>
+
+          <!-- Postscript (optional — remove this row if not used) -->
+          <tr><td style="padding:0 24px 32px 24px;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5;color:#44403c;font-style:italic;">
+            {{postscript}}
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="background:#e7e5e4;padding:24px;text-align:center;font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:12px;line-height:1.4;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;color:#78716c;">
+            <img src="{{logoUrl}}" alt="{{brandName}}" width="64" style="display:block;width:64px;height:auto;margin:0 auto 12px auto;">
+            <p style="margin:0 0 8px 0;">{{physicalAddress}}</p>
+            <p style="margin:0;">
+              <a href="{{unsubscribeUrl}}" style="color:#78716c;">Unsubscribe</a>
+              &nbsp;·&nbsp;
+              <a href="{{viewInBrowserUrl}}" style="color:#78716c;">View in browser</a>
+            </p>
+            <p style="margin:12px 0 0 0;color:#a8a29e;text-transform:none;letter-spacing:0;font-style:normal;">{{legalDisclaimer}}</p>
+          </td></tr>
+
+        </table>
+      </td></tr>
+    </table>
+  </body>
+  </html>
 sections:
   - name: Subject line
     guidance: |-
