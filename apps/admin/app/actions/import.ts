@@ -53,6 +53,10 @@ export async function runDataMigrations(
     };
   }
 
+  // IMPORTANT: getStoreBackend() returns a cached value that's only
+  // populated after getStore() has run on this function instance. Call
+  // getStore() FIRST, then check the backend.
+  const store = await getStore();
   if (getStoreBackend() !== 'postgres') {
     return {
       ok: false,
@@ -60,7 +64,6 @@ export async function runDataMigrations(
     };
   }
 
-  const store = await getStore();
   const brands = await store.listBrands();
   const perBrand: Record<string, { applied: string[]; errors: string[] }> = {};
   let totalApplied = 0;

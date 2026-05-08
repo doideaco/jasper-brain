@@ -69,8 +69,11 @@ async function runSeedSync() {
 
 async function runDataMigrationsAllBrands() {
   try {
-    if (getStoreBackend() !== 'postgres') return;
+    // IMPORTANT: getStoreBackend() returns a cached value populated by
+    // getStore(). On a cold start the cache is empty, so we MUST call
+    // getStore() first or the backend check returns null and bails.
     const store = await getStore();
+    if (getStoreBackend() !== 'postgres') return;
     const brands = await store.listBrands();
 
     for (const brand of brands) {
