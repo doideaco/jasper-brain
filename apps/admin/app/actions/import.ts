@@ -56,11 +56,24 @@ export async function runDataMigrations(
   // IMPORTANT: getStoreBackend() returns a cached value that's only
   // populated after getStore() has run on this function instance. Call
   // getStore() FIRST, then check the backend.
-  const store = await getStore();
-  if (getStoreBackend() !== 'postgres') {
+  let store;
+  try {
+    store = await getStore();
+  } catch (err) {
     return {
       ok: false,
-      message: 'Postgres backend not configured.',
+      message: `getStore() threw: ${
+        err instanceof Error ? err.message : 'unknown error'
+      }`,
+    };
+  }
+  const backend = getStoreBackend();
+  if (backend !== 'postgres') {
+    return {
+      ok: false,
+      message: `Postgres backend not configured. (backend resolved to: ${
+        backend ?? 'null'
+      } | DATABASE_URL ${process.env.DATABASE_URL ? 'set' : 'NOT set'} at runtime)`,
     };
   }
 
