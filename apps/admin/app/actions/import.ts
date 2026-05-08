@@ -8,7 +8,7 @@ import {
   type SeedSyncMode,
   type SeedSyncResult,
 } from '@/lib/seed-sync';
-import { getStore, getStoreBackend } from '@/lib/store';
+import { getStore } from '@/lib/store';
 
 export type ImportResult = SeedSyncResult;
 
@@ -53,9 +53,18 @@ export async function runDataMigrations(
     };
   }
 
-  // IMPORTANT: getStoreBackend() returns a cached value that's only
-  // populated after getStore() has run on this function instance. Call
-  // getStore() FIRST, then check the backend.
+  // Direct env-var check rather than the cached getStoreBackend().
+  // Server actions can run in fresh function instances where the
+  // module-level cache hasn't been populated yet, even after we
+  // call getStore(). DATABASE_URL is the source of truth.
+  if (!process.env.DATABASE_URL) {
+    return {
+      ok: false,
+      message:
+        'DATABASE_URL is not set in this function instance. Check Vercel project env vars (it must be available at runtime, not just at build).',
+    };
+  }
+
   let store;
   try {
     store = await getStore();
@@ -65,15 +74,6 @@ export async function runDataMigrations(
       message: `getStore() threw: ${
         err instanceof Error ? err.message : 'unknown error'
       }`,
-    };
-  }
-  const backend = getStoreBackend();
-  if (backend !== 'postgres') {
-    return {
-      ok: false,
-      message: `Postgres backend not configured. (backend resolved to: ${
-        backend ?? 'null'
-      } | DATABASE_URL ${process.env.DATABASE_URL ? 'set' : 'NOT set'} at runtime)`,
     };
   }
 
