@@ -18,6 +18,15 @@ const config: NextConfig = {
     '/brands/import/**': ['../../brands/**'],
   },
   serverExternalPackages: ['@jasper-brain/core'],
+  experimental: {
+    // Default is 1MB. Bulk illustration uploads are batched on the
+    // client into ~3MB chunks; this keeps Next.js out of the way.
+    // Vercel's serverless POST cap (4.5MB on Hobby/Pro) still applies,
+    // which is why client-side batching is the real fix.
+    serverActions: {
+      bodySizeLimit: '4mb',
+    },
+  },
 };
 
 export default config;
