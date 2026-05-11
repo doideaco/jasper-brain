@@ -16,12 +16,12 @@ features:
     description: Voice profile applies automatically to every Jasper output — long-form, social, ads, email — without re-prompting.
   - name: Multi-voice support
     description: Run sub-brands, regional variants, and audience-specific voices side by side in the same workspace.
-  - name: Brain integration
-    description: Voice profiles are part of Brain, which means they are accessible from any AI tool over MCP — not just inside Jasper.
+  - name: Signal integration
+    description: Voice profiles are part of Signal, which means they are accessible from any AI tool over MCP — not just inside Jasper.
 pricing: Included on Business and Enterprise plans. See pricing page for current tiers — do not quote dollar figures in copy.
 links:
   product: https://jasper.ai/brand-voice
   docs: https://docs.jasper.ai/brand-voice
 ---
 
-Brand Voice is the foundation of Brain. It is what every other artifact — guidelines, skills, templates — is calibrated against. Treat it as the highest-priority context to load when generating any branded content.
+Brand Voice is the foundation of Signal. It is what every other artifact — guidelines, skills, templates — is calibrated against. Treat it as the highest-priority context to load when generating any branded content.

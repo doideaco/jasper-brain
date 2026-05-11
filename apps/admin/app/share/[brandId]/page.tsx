@@ -651,8 +651,8 @@ ${typeCss}
           <div className="flex items-center gap-2 mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brainy.svg?v=2"
-              alt="Brainy"
+              src="/signal-logo.svg?v=1"
+              alt="Signal"
               className="h-5 w-auto opacity-90"
             />
             <span
@@ -730,15 +730,15 @@ ${typeCss}
           <div style={{ color: 'var(--brand-fg-muted)' }}>
             This page is generated from {brand.name}'s{' '}
             <span className="font-medium" style={{ color: 'var(--brand-fg)' }}>
-              Brain
+              Signal
             </span>
             . Updates here propagate to every connected surface in real time.
           </div>
           <div className="flex items-center gap-2 opacity-70">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/brainy.svg?v=2"
-              alt="Brainy"
+              src="/signal-logo.svg?v=1"
+              alt="Signal"
               className="h-4 w-auto"
             />
             <span className="mono text-xs uppercase tracking-wider">
@@ -1027,6 +1027,6 @@ function sampleFor(stepName: string): string {
   if (['h1', 'h2', 'h3'].includes(n)) return 'Content that ships.';
   if (n.includes('caption') || n.includes('eyebrow') || n.includes('label'))
     return 'EYEBROW · METADATA';
-  if (n.includes('mono') || n.includes('code')) return 'const brand = new Brain()';
+  if (n.includes('mono') || n.includes('code')) return 'const brand = new Signal()';
   return 'The quick brown fox jumps over the lazy dog.';
 }

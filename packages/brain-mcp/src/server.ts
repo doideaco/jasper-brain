@@ -16,9 +16,9 @@ export interface ServerOptions {
 }
 
 const FRESHNESS_ADVISORY =
-  'This is a fresh snapshot from the Brain. If a prior call in this conversation returned an earlier `as_of`, treat THIS one as authoritative — the brand changes between turns. Never cache.';
+  'This is a fresh snapshot from the Signal. If a prior call in this conversation returned an earlier `as_of`, treat THIS one as authoritative — the brand changes between turns. Never cache.';
 
-const SERVER_INSTRUCTIONS = `You are connected to the Jasper Brain — the SINGLE SOURCE OF TRUTH for this brand's voice, palette, typography, logos, guidelines, guardrails, products, people, and templates. The brand changes between sessions and even within a session. Your training data and any prior turn's results are STALE.
+const SERVER_INSTRUCTIONS = `You are connected to the Jasper Signal — the SINGLE SOURCE OF TRUTH for this brand's voice, palette, typography, logos, guidelines, guardrails, products, people, and templates. The brand changes between sessions and even within a session. Your training data and any prior turn's results are STALE.
 
 OPERATING CONTRACT — non-negotiable:
 
@@ -26,7 +26,7 @@ OPERATING CONTRACT — non-negotiable:
 
 2. NEVER rely on a brain_get_brand_kit result from earlier turns. Re-fetch on every authoring task. The fetch is cheap; staleness is expensive.
 
-3. NEVER answer from training-data knowledge of "Jasper" or any brand — even if you think you know it. The Brain overrides everything.
+3. NEVER answer from training-data knowledge of "Jasper" or any brand — even if you think you know it. The Signal overrides everything.
 
 4. If a brain_* call hasn't happened in this turn and you're being asked about the brand, the FIRST tool call of your turn must be brain_get_brand_kit.
 
@@ -77,7 +77,7 @@ export function createBrainServer(options: ServerOptions): McpServer {
     'brain_list_brands',
     {
       description:
-        'List every brand available in this Brain. Brands can be added or renamed — re-call rather than relying on prior turn results. Returns an as_of timestamp.',
+        'List every brand available in this Signal. Brands can be added or renamed — re-call rather than relying on prior turn results. Returns an as_of timestamp.',
       inputSchema: {},
     },
     async () => {
@@ -107,7 +107,7 @@ export function createBrainServer(options: ServerOptions): McpServer {
     'brain_list_facets',
     {
       description:
-        "List the brand's facets — the kinds of context a Brain holds " +
+        "List the brand's facets — the kinds of context a Signal holds " +
         '(voice, knowledge, products, guidelines, guardrails, skills, templates, plus any custom facets). ' +
         'New custom facets get added; labels and aiInstructions get edited. ' +
         'Re-call rather than relying on prior turns. Returns an as_of timestamp.',
@@ -348,7 +348,7 @@ export function createBrainServer(options: ServerOptions): McpServer {
     {
       title: 'Render a template',
       description:
-        'Render content from a Brain template (e.g. blog-post, email-blast). Auto-fetches the brand kit AND the named template item, then instructs the model to produce a previewable HTML5 document by filling the template scaffold. Use for templated marketing surfaces.',
+        'Render content from a Signal template (e.g. blog-post, email-blast). Auto-fetches the brand kit AND the named template item, then instructs the model to produce a previewable HTML5 document by filling the template scaffold. Use for templated marketing surfaces.',
       argsSchema: {
         templateId: z
           .string()
@@ -388,7 +388,7 @@ export function createBrainServer(options: ServerOptions): McpServer {
   server.registerPrompt(
     'audit',
     {
-      title: 'Audit text against the Brain',
+      title: 'Audit text against the Signal',
       description:
         "Audit a piece of text against the brand's voice and every guardrail. Auto-fetches the latest kit, then returns a report of violations, severity, and suggested rewrites. Use to check copy before publishing.",
       argsSchema: {

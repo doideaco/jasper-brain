@@ -14,7 +14,7 @@ export default async function BrandsPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Brands</h1>
           <p className="text-stone-600 mt-1">
-            Each brand is a self-contained Brain — voice, visual identity,
+            Each brand is a self-contained Signal — voice, visual identity,
             knowledge, rules, and plays.
           </p>
           {backend && (

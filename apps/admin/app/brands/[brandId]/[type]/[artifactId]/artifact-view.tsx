@@ -737,7 +737,7 @@ function sampleFor(stepName: string): string {
     return 'EYEBROW · METADATA';
   }
   if (n.includes('mono') || n.includes('code')) {
-    return 'const brand = new Brain()';
+    return 'const brand = new Signal()';
   }
   return 'The quick brown fox jumps over the lazy dog.';
 }

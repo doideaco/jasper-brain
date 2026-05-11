@@ -16,7 +16,7 @@ export interface PlaygroundResult {
   error?: string;
 }
 
-const SYSTEM_PROMPT = `You are an AI authoring assistant grounded in a brand's Brain context.
+const SYSTEM_PROMPT = `You are an AI authoring assistant grounded in a brand's Signal context.
 
 The user has provided you with the full structured brand kit below — voice, values, visual identity (typography, palette, logos, textures), guardrails, people, products, templates, and behavioural instructions per facet.
 

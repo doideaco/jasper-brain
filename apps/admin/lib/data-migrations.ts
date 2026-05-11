@@ -122,6 +122,73 @@ export async function applyDataMigrations(
   }
 
   // ───────────────────────────────────────────────────────────────────
+  // Migration: rename-2026-05-11 — Brain → Signal rename.
+  // Patches user-visible copy in seed-driven items that drifted when
+  // the product was renamed.
+  // ───────────────────────────────────────────────────────────────────
+  try {
+    const value = await store.getArtifact(
+      brandId,
+      'value',
+      'plain-over-clever',
+    );
+    if (value.type === 'value') {
+      let changed = false;
+      let example = value.example ?? '';
+      if (example.includes('"Brain"') || example.includes('Brain is what it is')) {
+        example = example
+          .split('"Brain"').join('"Signal"')
+          .split('Brain is what it is').join('Signal is what it is');
+        changed = true;
+      }
+      if (changed) {
+        await store.putArtifact(brandId, { ...value, example });
+        applied.push(`${brandId}/value/plain-over-clever: Brain → Signal in example`);
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error && !/not found/i.test(err.message)) {
+      errors.push(`value/plain-over-clever rename: ${err.message}`);
+    }
+  }
+
+  try {
+    const product = await store.getArtifact(brandId, 'product', 'brand-voice');
+    if (product.type === 'product') {
+      let changed = false;
+      const features = (product.features ?? []).map((f) => {
+        if (f.name === 'Brain integration') {
+          changed = true;
+          return {
+            ...f,
+            name: 'Signal integration',
+            description: f.description.replace(
+              /part of Brain/g,
+              'part of Signal',
+            ),
+          };
+        }
+        return f;
+      });
+      let body = product.body ?? '';
+      if (body.includes('foundation of Brain')) {
+        body = body.split('foundation of Brain').join('foundation of Signal');
+        changed = true;
+      }
+      if (changed) {
+        await store.putArtifact(brandId, { ...product, features, body });
+        applied.push(
+          `${brandId}/product/brand-voice: Brain → Signal in features + body`,
+        );
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error && !/not found/i.test(err.message)) {
+      errors.push(`product/brand-voice rename: ${err.message}`);
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────
   // Migration: template-scaffold-2026-05 — sync scaffold/sections/body
   // from filesystem seed when the DB row predates a known scaffold
   // update. Identified by a marker string present only in the new

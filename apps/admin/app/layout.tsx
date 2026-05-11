@@ -5,7 +5,7 @@ import { MainWrap, TopNav } from '@/components/top-nav';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Brain — by Jasper',
+  title: 'Signal — by Jasper',
   description: 'Centralised brand knowledge and context layer.',
 };
 

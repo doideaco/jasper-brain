@@ -12,7 +12,7 @@ const SUGGESTIONS = [
   'Write a launch announcement email for our new Texture facet — CSS-driven brand surface treatments. Output as plain text with a Subject and Preview line, following the email-blast template hard rules.',
   'Generate the hero + lead paragraph + closing for a blog post about why brand context belongs in MCP. Use the blog-post template. Render as HTML with inline styles using the actual palette and typography tokens.',
   'Audit this draft against our voice and guardrails and return a list of violations with suggested rewrites:\n\n"We\'re excited to announce our revolutionary new AI platform that 50,000+ marketing teams use to leverage cutting-edge generative AI..."',
-  'Write three LinkedIn posts about Brain — one as Alex Morris (founder), one as a marketing manager who just switched to Jasper, and one announcing a new Brand Voice feature. Vary the openers but keep voice consistent.',
+  'Write three LinkedIn posts about Signal — one as Alex Morris (founder), one as a marketing manager who just switched to Jasper, and one announcing a new Brand Voice feature. Vary the openers but keep voice consistent.',
 ];
 
 export function PlaygroundForm({ brandId }: { brandId: string }) {

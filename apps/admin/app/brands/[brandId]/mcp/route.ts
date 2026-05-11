@@ -22,7 +22,7 @@ const INTERNAL_ERROR = -32603;
 const SERVER_INFO = { name: 'jasper-brain', version: '0.0.1' } as const;
 
 const SERVER_INSTRUCTIONS =
-  'Jasper Brain — single source of truth for brand context. ALWAYS call brain_get_brand_kit before authoring; never rely on prior turns. Slash-command prompts (/write, /render-template, /audit, /brief) auto-fetch fresh context.';
+  'Jasper Signal — single source of truth for brand context. ALWAYS call brain_get_brand_kit before authoring; never rely on prior turns. Slash-command prompts (/write, /render-template, /audit, /brief) auto-fetch fresh context.';
 
 const CAPABILITIES = {
   tools: { listChanged: false },

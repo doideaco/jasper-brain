@@ -20,8 +20,8 @@ export function TopNav({
         <Link href="/" className="flex items-center gap-2 group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/brainy.svg?v=2"
-            alt="Brainy"
+            src="/signal-logo.svg?v=1"
+            alt="Signal"
             className="h-5 w-auto group-hover:opacity-80 transition-opacity"
           />
           <span className="text-stone-400 font-normal text-sm leading-none">
