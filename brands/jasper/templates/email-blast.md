@@ -6,7 +6,7 @@ format: email
 renderAs: html-email
 tags: [email, lifecycle, marketing]
 scaffold: |-
-  <!-- email-blast scaffold rev: 2026-05-08-feature-display-+-illustration -->
+  <!-- email-blast scaffold rev: 2026-05-11-force-rerun -->
   <!-- Subject: {{subject}} -->
   <!-- Preview: {{preview}} -->
   <!doctype html>

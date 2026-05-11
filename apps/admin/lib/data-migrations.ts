@@ -144,7 +144,7 @@ export async function applyDataMigrations(
     'product-landing-page': '.reveal-up',
     // email-blast: versioned scaffold comment as marker. Bump the date
     // in the comment + here whenever the seed scaffold changes.
-    'email-blast': 'email-blast scaffold rev: 2026-05-08-feature-display-+-illustration',
+    'email-blast': 'email-blast scaffold rev: 2026-05-11-force-rerun',
   };
 
   for (const [templateId, marker] of Object.entries(
