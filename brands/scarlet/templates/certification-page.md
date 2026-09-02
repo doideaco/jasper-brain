@@ -417,10 +417,12 @@ When invoked, you MUST return a single, complete, previewable HTML5 document. No
 4. **Every field is verified.** Certification ID, issued date, valid-until date, next surveillance date, standards clauses, and audit finding IDs are pulled from the review file — not invented. If the user has not supplied verified inputs, ask for them; do not fill in plausible-looking values.
 5. **No `{{...}}` placeholders in output.** Every slot is filled with real content or the section is omitted with the section removed from the scaffold entirely.
 6. **Status colours are semantic.** The status pill and every status cell in the audit-history table use the palette's status colours (Approved / Caution / Restricted) matched exactly to the actual certification state.
+7. **Asset URLs are absolute.** Any logo or reviewer-photo URL you emit must be the ABSOLUTE Scarlet Signal URL (`https://…/api/files/…`), never a root-relative `/api/files/…` — the artifact preview resolves relative URLs against the sandbox origin and they will 404.
+8. **Announce the preview limit.** After returning the fenced ```html block, add exactly one plain-text line telling the reader that the inline preview may not load the images (logo, reviewer photo) and offering to open the HTML in a real browser tab (Safari, Chrome). This line goes AFTER the closing fence, not inside it.
 
 ## Why HTML
 
-This template renders the canonical public record of a Scarlet certification. It is designed to look identical whether rendered as a Claude.ai artifact, printed as a PDF, or published to the manufacturer's marketing site. Fragmentary HTML or a rendered summary defeats the "public record" purpose.
+This template renders the canonical public record of a Scarlet certification. It is designed to look identical whether rendered as a Claude.ai artifact, printed as a PDF, or published to the manufacturer's marketing site. Fragmentary HTML or a rendered summary defeats the "public record" purpose. The preview is a sandbox — some clients block third-party image loads, which is why rule 8 always offers a real browser tab.
 
 ## Resolution order for AI agents
 

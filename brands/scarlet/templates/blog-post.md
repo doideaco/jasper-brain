@@ -343,10 +343,12 @@ When invoked, you MUST return a single, complete, previewable HTML5 document. No
    - Logos: only `logo.assets[].url` strings. Never construct `scarletmd.com/...` or any other URL.
 5. **Slot resolution.** Every `{{slot}}` referenced in section guidance must be filled with real content. No `{{...}}` placeholders, no Lorem Ipsum, no `<!-- TODO -->` comments, no `[bracketed-instruction-text]`.
 6. **Citations are the audit trail.** The Citations section is required. If a claim cannot be sourced to a standard, regulation, peer-reviewed study, or completed Scarlet review, the claim comes out of the post — not into the citations list.
+7. **Asset URLs are absolute.** Any logo, illustration, or headshot URL you emit must be the ABSOLUTE Scarlet Signal URL (`https://…/api/files/…`), never a root-relative `/api/files/…` — the artifact preview resolves relative URLs against the sandbox origin and they will 404.
+8. **Announce the preview limit.** After returning the fenced ```html block, add exactly one plain-text line telling the reader that the inline preview may not load the images and offering to open the HTML in a real browser tab (Safari, Chrome). This line goes AFTER the closing fence, not inside it, and it is the only text you write outside the fence.
 
 ## Why HTML
 
-This template renders to a previewable artifact in Claude.ai (which adds an "Open in new tab" affordance) and a copy-paste-ready document in Claude Desktop. Markdown output, prose summaries, or fragmentary HTML defeat both.
+This template renders to a previewable artifact in Claude.ai (which adds an "Open in new tab" affordance) and a copy-paste-ready document in Claude Desktop. Markdown output, prose summaries, or fragmentary HTML defeat both. The preview itself is a sandbox — some clients block third-party image loads, which is why the closing line in rule 8 always offers a real browser tab.
 
 ## Resolution order for AI agents
 

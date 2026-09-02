@@ -312,6 +312,49 @@ export async function applyDataMigrations(
   }
 
   // ───────────────────────────────────────────────────────────────────
+  // Migration: scarlet-template-asset-notes-2026-09 — push the
+  // asset-delivery output-contract rules (rules 7 and 8: absolute
+  // URLs, and the closing "preview may not load images" line) into
+  // scarlet's blog-post and certification-page template rows. The
+  // rules live in the seed template body; add-only sync skipped
+  // these rows on first pass so the body has to be re-pushed here.
+  // Content-gated: only fires when the seed body carries the marker
+  // and the DB body does not.
+  // ───────────────────────────────────────────────────────────────────
+  if (brandId === 'scarlet') {
+    for (const templateId of ['blog-post', 'certification-page']) {
+      const ASSET_NOTE_MARKER = 'Announce the preview limit';
+      try {
+        const seed = await readSeedTemplate(brandId, templateId);
+        if (!seed || seed.type !== 'template') continue;
+        if (!(seed.body ?? '').includes(ASSET_NOTE_MARKER)) continue;
+
+        const db = await store
+          .getArtifact(brandId, 'template', templateId)
+          .catch(() => null);
+        if (!db || db.type !== 'template') continue;
+        if ((db.body ?? '').includes(ASSET_NOTE_MARKER)) continue;
+
+        await store.putArtifact(brandId, {
+          ...db,
+          body: seed.body,
+          scaffold: seed.scaffold,
+          sections: seed.sections,
+          format: seed.format,
+          renderAs: seed.renderAs,
+        });
+        applied.push(
+          `${brandId}/template/${templateId}: synced asset-delivery rules from seed`,
+        );
+      } catch (err) {
+        errors.push(
+          `${brandId}/template/${templateId} asset-note: ${err instanceof Error ? err.message : 'failed'}`,
+        );
+      }
+    }
+  }
+
+  // ───────────────────────────────────────────────────────────────────
   // Migration: template-scaffold-2026-05 — sync scaffold/sections/body
   // from filesystem seed when the DB row predates a known scaffold
   // update. Identified by a marker string present only in the new

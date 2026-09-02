@@ -34,7 +34,19 @@ OPERATING CONTRACT — non-negotiable:
 
 DISCOVERY FLOW (when you don't know the brand id yet): brain_list_brands → brain_list_facets → brain_search or brain_list_items → brain_get_item for full content.
 
-PROMPTS: this server also exposes slash-commands (\`/write\`, \`/render-template\`, \`/audit\`, \`/brief\`) that auto-fetch fresh context. If the user invokes one, it pre-bundles the kit — you do not need to re-fetch on top of it.`;
+PROMPTS: this server also exposes slash-commands (\`/write\`, \`/render-template\`, \`/audit\`, \`/brief\`) that auto-fetch fresh context. If the user invokes one, it pre-bundles the kit — you do not need to re-fetch on top of it.
+
+ASSET DELIVERY — read before returning HTML:
+
+Every logo / illustration / uploaded asset lives on the Signal's own origin (typically \`https://<brand-signal>.vercel.app/api/files/...\`). Asset URLs in kit responses (\`logo.assets[].url\`, \`illustration.assets[].url\`, \`person.imageUrl\`) may be absolute or start with \`/api/files/\` — use them VERBATIM in \`<img src>\` and CSS \`background-image\`, and NEVER construct or rewrite them.
+
+Root-relative \`/api/files/\` URLs resolve against the RENDERING origin, not the Signal's. In the artifact preview inside a chat client (Claude.ai's inline preview, Claude Desktop's artifact panel), that means those images will 404 — the preview host has no such route. Absolute Signal URLs load if the network allows, but preview sandboxes commonly block third-party image loads.
+
+Two rules follow:
+
+1. When rendering a template, if any asset URL in the output is root-relative (\`/api/files/...\`), rewrite it to the absolute Signal URL before returning — prepend the origin from any absolute URL already present in the kit (e.g. from another asset), or ask the user for the origin if none is present. Never invent an origin.
+
+2. After returning ANY HTML that references Signal-hosted assets, tell the user in one line that the inline preview may not load the images and offer to open the output in a real browser tab (Safari, Chrome). The rendered HTML is portable — the assets load fine when the file is opened outside the sandbox. Do not omit this line just because the preview looked OK to you in a prior turn; sandbox behaviour varies by client and asset.`;
 
 /**
  * Wraps every tool response with an `as_of` timestamp and a freshness
