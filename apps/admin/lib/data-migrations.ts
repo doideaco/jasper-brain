@@ -18,7 +18,12 @@
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { parseArtifact, type WritableBrainStore } from '@jasper-brain/core';
+import { parse as parseYaml } from 'yaml';
+import {
+  Brand,
+  parseArtifact,
+  type WritableBrainStore,
+} from '@jasper-brain/core';
 import { findBrandsDir } from '@/lib/seed-sync';
 
 export interface MigrationResult {
@@ -224,6 +229,89 @@ export async function applyDataMigrations(
   }
 
   // ───────────────────────────────────────────────────────────────────
+  // Migration: brand-yaml-merge-2026-09 — fill null brand-row fields
+  // (mission, vision, urls, contact, founded, hq, primaryUrl,
+  // primaryVoiceId) from the filesystem brand.yaml when the DB row
+  // was inserted before those fields existed. Only touches fields
+  // whose DB value is null/empty — preserves anything a user has
+  // filled in through the admin. Idempotent.
+  //
+  // Why this exists: add-only seed-sync checks brand-row existence
+  // and skips the whole put if the brand already exists. Fields
+  // added to brand.yaml AFTER the row was first created never land.
+  // ───────────────────────────────────────────────────────────────────
+  try {
+    const seed = await readSeedBrand(brandId);
+    if (seed) {
+      const current = await store.getBrand(brandId);
+      const merged = { ...current };
+      const patched: string[] = [];
+
+      const mergeField = <K extends keyof typeof current>(key: K) => {
+        const cur = current[key];
+        const isEmpty =
+          cur === undefined ||
+          cur === null ||
+          (typeof cur === 'string' && cur.trim() === '') ||
+          (Array.isArray(cur) && cur.length === 0) ||
+          (typeof cur === 'object' &&
+            !Array.isArray(cur) &&
+            cur !== null &&
+            Object.keys(cur as object).length === 0);
+        if (isEmpty && seed[key] !== undefined) {
+          (merged as Record<string, unknown>)[key as string] = seed[key];
+          patched.push(String(key));
+        }
+      };
+
+      mergeField('mission');
+      mergeField('vision');
+      mergeField('primaryUrl');
+      mergeField('urls');
+      mergeField('contact');
+      mergeField('founded');
+      mergeField('hq');
+      mergeField('primaryVoiceId');
+      mergeField('tags');
+
+      if (patched.length > 0) {
+        await store.putBrand(merged);
+        applied.push(`${brandId}: brand.yaml merge — ${patched.join(', ')}`);
+      }
+    }
+  } catch (err) {
+    errors.push(
+      `brand.yaml merge: ${err instanceof Error ? err.message : 'failed'}`,
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────
+  // Migration: empty-logo-primary-cleanup-2026-09 — delete a
+  // `logo/primary` shell artifact that carries zero assets when
+  // another logo for the same brand DOES have assets. The empty
+  // shell can win pickPrimary and hide the real logo on the share
+  // page. Only fires when there is a non-empty alternative — never
+  // deletes the brand's only logo, however empty.
+  // ───────────────────────────────────────────────────────────────────
+  try {
+    const logos = (
+      await store.listArtifacts(brandId, { facetId: 'logo' })
+    ).filter((l) => l.type === 'logo');
+    const empty = logos.find((l) => l.id === 'primary' && l.assets.length === 0);
+    const hasAlternative = logos.some(
+      (l) => l.id !== 'primary' && l.assets.length > 0,
+    );
+    if (empty && hasAlternative) {
+      await store.deleteArtifact(brandId, 'logo', 'primary');
+      applied.push(`${brandId}/logo/primary: removed empty shell`);
+    }
+  } catch (err) {
+    errors.push(
+      `empty logo/primary cleanup: ${err instanceof Error ? err.message : 'failed'}`,
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────
   // Migration: template-scaffold-2026-05 — sync scaffold/sections/body
   // from filesystem seed when the DB row predates a known scaffold
   // update. Identified by a marker string present only in the new
@@ -329,6 +417,27 @@ export async function applyDataMigrations(
   }
 
   return { applied, errors };
+}
+
+/**
+ * Read a brand.yaml seed from the filesystem and parse it. Returns
+ * null if the brands/ root can't be found, the file doesn't exist, or
+ * parsing fails — never throws. Used by the brand-yaml-merge migration
+ * to backfill nulls in the DB brand row from the seed.
+ */
+async function readSeedBrand(
+  brandId: string,
+): Promise<ReturnType<typeof Brand.parse> | null> {
+  const dir = await findBrandsDir();
+  if (!dir) return null;
+  const filePath = path.join(dir, brandId, 'brand.yaml');
+  try {
+    const raw = await fs.readFile(filePath, 'utf-8');
+    const yaml = parseYaml(raw) as Record<string, unknown>;
+    return Brand.parse({ id: brandId, ...yaml });
+  } catch {
+    return null;
+  }
 }
 
 /**
