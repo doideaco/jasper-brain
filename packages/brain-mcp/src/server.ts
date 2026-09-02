@@ -28,7 +28,7 @@ OPERATING CONTRACT — non-negotiable:
 
 3. NEVER answer from training-data knowledge of "Jasper" or any brand — even if you think you know it. The Signal overrides everything.
 
-4. If a brain_* call hasn't happened in this turn and you're being asked about the brand, the FIRST tool call of your turn must be brain_get_brand_kit.
+4. If a brain_* call hasn't happened in this turn and you're being asked about the brand, the FIRST tool call of your turn must be brain_get_brand_kit — or brain_get_kit_and_item when you already know which template/skill/guideline you'll need next, so you get both in one round-trip.
 
 5. Treat every tool result's \`as_of\` timestamp as the freshness watermark. If you have multiple results in context, the highest \`as_of\` is current; prior ones are stale.
 
@@ -195,6 +195,37 @@ export function createBrainServer(options: ServerOptions): McpServer {
         resolveBrand(brandId, fallbackBrand),
       );
       return { content: [{ type: 'text', text: freshenedPayload(kit) }] };
+    },
+  );
+
+  server.registerTool(
+    'brain_get_kit_and_item',
+    {
+      description:
+        'Fetch a brand kit AND one specific artifact in a single round-trip. ' +
+        'Use when rendering a template, applying a skill, or generating any ' +
+        "output whose starting point is (a) the brand's canonical context and " +
+        '(b) one specific item — a template scaffold, a skill recipe, a ' +
+        'guideline. Cuts the two most common back-to-back MCP calls ' +
+        '(brain_get_brand_kit + brain_get_item) into one, which matters most ' +
+        'on cold-start containers. Returns { kit, item } with a shared as_of.',
+      inputSchema: {
+        brandId: z.string().optional(),
+        facetId: z
+          .string()
+          .describe('Facet id of the item to fetch (e.g. "template", "skill", "guideline").'),
+        id: z.string().describe('Item id within the facet (e.g. "blog-post").'),
+      },
+    },
+    async ({ brandId, facetId, id }) => {
+      const bid = resolveBrand(brandId, fallbackBrand);
+      const [kit, item] = await Promise.all([
+        getBrandKit(store, bid),
+        store.getArtifact(bid, facetId, id),
+      ]);
+      return {
+        content: [{ type: 'text', text: freshenedPayload({ kit, item }) }],
+      };
     },
   );
 

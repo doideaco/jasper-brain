@@ -10,6 +10,9 @@ const isPublic = createRouteMatcher([
   // onBeforeGenerateToken, and handleUpload validates webhook payload
   // signatures, so it's safe to skip Clerk here.
   '/api/blob-upload-token',
+  // Public so Vercel Cron can hit it unauthenticated. The route is
+  // read-only and returns only aggregate counts — no brand data.
+  '/api/warmup',
   '/brands/(.*)/mcp',
   '/brands/(.*)/schema.json',
   '/brands/(.*)/llms.txt',
