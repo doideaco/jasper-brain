@@ -378,6 +378,8 @@ export async function applyDataMigrations(
     // email-blast: versioned scaffold comment as marker. Bump the date
     // in the comment + here whenever the seed scaffold changes.
     'email-blast': 'email-blast scaffold rev: 2026-05-11-force-rerun',
+    // certification-page: physical document treatment with security cues.
+    'certification-page': '.page-watermark-inner',
   };
 
   for (const [templateId, marker] of Object.entries(
