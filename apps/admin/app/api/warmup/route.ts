@@ -1,16 +1,18 @@
 /**
- * Cron warm-up endpoint.
+ * Warm-up endpoint. Boots the serverless function if cold and primes
+ * the in-process store cache with every brand's artifact list, so
+ * subsequent MCP calls hitting the same warm container are served
+ * from memory rather than from Postgres.
  *
- * Vercel Cron hits this every 5 minutes (see vercel.json). It:
- *   1. Boots the serverless function if it's cold, so real user
- *      MCP calls hit a warm container.
- *   2. Primes the in-process store cache with every brand's artifact
- *      list, so the first real request in the warm window is served
- *      from memory rather than from Postgres.
+ * Public: no Clerk gate. Read-only, returns only aggregate counts —
+ * no brand data is exposed.
  *
- * Public: no Clerk gate. Vercel Cron dispatches unauthenticated. The
- * endpoint is read-only and returns only aggregate counts — no brand
- * data is exposed.
+ * Ideally hit by a scheduled ping (Vercel Cron on Pro / an external
+ * scheduler on Hobby) every few minutes to keep at least one
+ * instance per region warm. On the Hobby plan Vercel Cron is capped
+ * at once per day, which is too infrequent to be useful as a
+ * warm-up — see the README for external-scheduler options
+ * (cron-job.org, GitHub Actions on a schedule).
  */
 import { NextResponse } from 'next/server';
 import { getStore, getStoreBackend } from '@/lib/store';
