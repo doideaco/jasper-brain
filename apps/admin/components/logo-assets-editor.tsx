@@ -32,13 +32,23 @@ function toDraft(asset: LogoAsset): DraftAsset {
   };
 }
 
+const URL_RE = /^(https?:\/\/|\/)/i;
+
 function serialize(drafts: DraftAsset[]): string {
   if (drafts.length === 0) return '[]';
   const cleaned = drafts.map((d) => {
+    let { variant, url } = d;
+    // Safety net: if a URL landed in `variant` and `url` is empty (see the
+    // onChange handler for the same rescue), swap them on the way out too
+    // so no submission can ever persist a mislabelled asset.
+    if (URL_RE.test(variant) && !url) {
+      url = variant;
+      variant = 'primary';
+    }
     const obj: Record<string, unknown> = {
-      variant: d.variant,
+      variant,
       format: d.format,
-      url: d.url,
+      url,
     };
     if (d.use) obj.use = d.use;
     if (d.background) obj.background = d.background;
@@ -95,7 +105,18 @@ export function LogoAssetsEditor({
               <input
                 type="text"
                 value={draft.variant}
-                onChange={(e) => update(idx, { variant: e.target.value })}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  // A URL pasted into the Variant slot is almost always a
+                  // mistake (Variant is directly above the URL field and
+                  // the two get muddled). Rescue it into `url` if that
+                  // slot is empty, so the artifact still saves correctly.
+                  if (URL_RE.test(next) && !draft.url) {
+                    update(idx, { variant: 'primary', url: next });
+                    return;
+                  }
+                  update(idx, { variant: next });
+                }}
                 placeholder="variant — e.g. wordmark-on-light"
                 className={inputBase}
                 aria-label="Variant name"

@@ -189,6 +189,41 @@ export async function applyDataMigrations(
   }
 
   // ───────────────────────────────────────────────────────────────────
+  // Migration: logo-asset-variant-url-swap-2026-09 — heal logo assets
+  // where the URL was pasted into the `variant` field, leaving `url`
+  // empty. The editor's Variant input sits above the URL input, so a
+  // hurried paste lands in the wrong slot; the resulting artifact
+  // renders as a broken <img> on /share/<brand>. Idempotent.
+  // ───────────────────────────────────────────────────────────────────
+  try {
+    const logos = await store.listArtifacts(brandId, { facetId: 'logo' });
+    for (const logo of logos) {
+      if (logo.type !== 'logo') continue;
+      let changed = false;
+      const assets = logo.assets.map((a) => {
+        // A variant that looks like a URL (absolute or root-relative) with
+        // an empty url field is the fingerprint of a paste into the wrong
+        // input — heal it.
+        if (/^(https?:\/\/|\/)/i.test(a.variant) && !a.url) {
+          changed = true;
+          return { ...a, variant: 'primary', url: a.variant };
+        }
+        return a;
+      });
+      if (changed) {
+        await store.putArtifact(brandId, { ...logo, assets });
+        applied.push(
+          `${brandId}/logo/${logo.id}: moved URL from variant → url`,
+        );
+      }
+    }
+  } catch (err) {
+    errors.push(
+      `logo variant/url swap: ${err instanceof Error ? err.message : 'failed'}`,
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────
   // Migration: template-scaffold-2026-05 — sync scaffold/sections/body
   // from filesystem seed when the DB row predates a known scaffold
   // update. Identified by a marker string present only in the new

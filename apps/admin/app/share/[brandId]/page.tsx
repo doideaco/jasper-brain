@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type {
   ColorToken,
   Faq,
+  Illustration,
   Logo,
   Palette,
   Person,
@@ -45,6 +46,9 @@ export default async function PublicBrandPage({
   const palettes = items.filter((i): i is Palette => i.type === 'palette');
   const logos = items.filter((i): i is Logo => i.type === 'logo');
   const textures = items.filter((i): i is Texture => i.type === 'texture');
+  const illustrations = items.filter(
+    (i): i is Illustration => i.type === 'illustration',
+  );
   const people = items.filter((i): i is Person => i.type === 'person');
   const products = items.filter((i): i is Product => i.type === 'product');
   const faqs = items.filter((i): i is Faq => i.type === 'faq');
@@ -442,6 +446,61 @@ ${typeCss}
                 </div>
               </div>
             ))}
+          </div>
+        </Section>
+      )}
+
+      {/* Illustrations */}
+      {illustrations.length > 0 && (
+        <Section title="Illustration">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {illustrations.flatMap((ill) =>
+              ill.assets
+                .filter((a) => a.url)
+                .map((asset, i) => (
+                  <figure
+                    key={`${ill.id}-${i}`}
+                    className="card rounded-lg overflow-hidden"
+                  >
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        background:
+                          asset.background === 'dark'
+                            ? '#0c0a09'
+                            : 'var(--brand-card)',
+                        aspectRatio: '4 / 3',
+                      }}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={asset.url}
+                        alt={ill.name}
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                    <figcaption className="p-4">
+                      <div className="font-medium">{ill.name}</div>
+                      {ill.subject && (
+                        <div
+                          className="text-xs mt-1"
+                          style={{ color: 'var(--brand-fg-muted)' }}
+                        >
+                          {ill.subject}
+                        </div>
+                      )}
+                      {ill.mood.length > 0 && (
+                        <div
+                          className="mono text-[10px] uppercase tracking-wider mt-2"
+                          style={{ color: 'var(--brand-fg-muted)' }}
+                        >
+                          {ill.mood.join(' · ')}
+                        </div>
+                      )}
+                    </figcaption>
+                  </figure>
+                )),
+            )}
           </div>
         </Section>
       )}
