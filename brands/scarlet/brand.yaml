@@ -1,0 +1,33 @@
+name: Scarlet
+tagline: We pull medical technology from the future to solve human health
+description: Scarlet is the global AI certification body. We are a Notified Body under EU MDR (2017/745) and a UK Approved Body under UK MDR 2002, specialised in software as a medical device and AI-driven diagnostics. We remove unnecessary delays from every regulatory approval we do so people can access life-changing medical technology sooner.
+
+primaryUrl: https://scarlet.cc
+urls:
+  product: https://scarlet.cc
+  mission: https://scarlet.cc/mission
+  customer-stories: https://scarlet.cc/customer-stories
+  llms: https://scarlet.cc/llms
+  agentic: https://scarlet.cc/agentic
+  blog: https://scarlet.cc/blog
+  careers: https://scarlet.cc/careers
+
+mission: We believe healthcare can be solved by the next generation of medical technology. Our mission is to pull those devices from the future into today.
+vision: Get life-changing medical technology to the people who need it — faster, and without cutting a single corner on evidence.
+
+founded: 2020
+hq:
+  city: London
+  country: United Kingdom
+
+contact:
+  email: hello@scarlet.cc
+
+primaryVoiceId: default
+
+tags:
+  - notified-body
+  - ai-medical-devices
+  - samd
+  - eu-mdr
+  - regulation
