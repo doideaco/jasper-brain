@@ -34,62 +34,138 @@ scaffold: |-
         --caution-50: #F5E9D8;
         --restricted: #8B1520;
         --restricted-50: #F3DEE0;
+        --ground: #D6D2CE;
+        --page-bg: #FFFFFF;
+        --border-rule: #C2BBB5;
+        --border-rule-inner: #D4CEC8;
+        --page-inset: 20px;
+        --content-pad: 56px;
         --display-family: 'Aeonik Pro', 'Aeonik', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         --body-family: 'Aeonik Pro', 'Aeonik', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         --mono-family: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
       }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body-family); font-size: 16px; line-height: 1.6; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --ground: #141210;
+          --page-bg: #222020;
+          --ink: #F2EFE9;
+          --ink-alt: #E8E4DE;
+          --slate-700: #A8A09A;
+          --slate-500: #8A847B;
+          --slate-200: #383432;
+          --slate-100: #2E2B29;
+          --paper: #1E1C1A;
+          --card: #2A2725;
+          --border-rule: #484340;
+          --border-rule-inner: #3C3836;
+          --scarlet-50: #3A2020;
+          --approved-50: #1A2E24;
+          --caution-50: #2E2418;
+          --restricted-50: #2E1A1C;
+        }
+      }
+      :root[data-theme="dark"] {
+        --ground: #141210;
+        --page-bg: #222020;
+        --ink: #F2EFE9;
+        --ink-alt: #E8E4DE;
+        --slate-700: #A8A09A;
+        --slate-500: #8A847B;
+        --slate-200: #383432;
+        --slate-100: #2E2B29;
+        --paper: #1E1C1A;
+        --card: #2A2725;
+        --border-rule: #484340;
+        --border-rule-inner: #3C3836;
+        --scarlet-50: #3A2020;
+        --approved-50: #1A2E24;
+        --caution-50: #2E2418;
+        --restricted-50: #2E1A1C;
+      }
+      * { box-sizing: border-box; margin: 0; }
+      body { background: var(--ground); color: var(--ink); font-family: var(--body-family); font-size: 16px; line-height: 1.6; min-height: 100vh; padding: 56px 24px; }
       a { color: inherit; }
       code { font-family: var(--mono-family); font-size: 0.92em; background: var(--slate-100); color: var(--ink); padding: 2px 6px; border-radius: 3px; font-weight: 500; }
-      .container { max-width: 1040px; margin: 0 auto; padding: 0 32px; }
-      .container-narrow { max-width: 720px; margin: 0 auto; padding: 0 32px; }
 
-      header.bar { padding: 20px 0; border-bottom: 1px solid var(--slate-200); background: var(--paper); }
-      header.bar nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-      header.bar img { height: 28px; width: auto; }
-      .nav-links { display: flex; gap: 24px; font-size: 14px; color: var(--ink); font-weight: 500; }
-      .nav-links a { text-decoration: none; }
+      /* ── Physical page ── */
+      .page { max-width: 880px; margin: 0 auto; background: var(--page-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.05), 0 20px 48px rgba(0,0,0,0.07); position: relative; }
+
+      /* Double-rule inset border */
+      .page::before { content: ''; position: absolute; inset: var(--page-inset); border: 1px solid var(--border-rule); pointer-events: none; z-index: 1; }
+      .page::after { content: ''; position: absolute; inset: calc(var(--page-inset) + 4px); border: 0.5px solid var(--border-rule-inner); pointer-events: none; z-index: 1; }
+
+      /* Paper grain */
+      .page-grain { position: absolute; inset: 0; opacity: 0.02; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 200px 200px; z-index: 0; }
+
+      /* Tiled watermark — passport-style diagonal text */
+      .page-watermark { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+      .page-watermark-inner { position: absolute; inset: -50%; width: 200%; height: 200%; transform: rotate(-45deg); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 32px; opacity: 0.028; }
+      .wm-row { display: flex; gap: 40px; white-space: nowrap; font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); line-height: 1; }
+      .wm-row.offset { margin-left: 80px; }
+
+      .page-content { position: relative; z-index: 2; }
+
+      /* ── Scarlet accent band ── */
+      .accent-band { height: 5px; background: var(--scarlet); position: relative; overflow: hidden; }
+      .accent-band::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(255,255,255,0.15) 3px, rgba(255,255,255,0.15) 6px); }
+
+      /* ── Header ── */
+      .cert-header { display: flex; align-items: center; justify-content: space-between; padding: 24px var(--content-pad); border-bottom: 1px solid var(--slate-200); }
+      .cert-header img { height: 28px; width: auto; }
+      .nav-links { display: flex; gap: 24px; font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-700); }
+      .nav-links a { text-decoration: none; color: inherit; }
       .nav-links a:hover { color: var(--scarlet); }
-      .breadcrumb { padding: 24px 0 0 0; font-family: var(--mono-family); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); }
-      .breadcrumb a { text-decoration: none; }
-      .breadcrumb span.sep { padding: 0 8px; color: var(--slate-200); }
 
-      .hero-cert { padding: 40px 0 56px 0; display: grid; grid-template-columns: 1fr 320px; gap: 48px; align-items: start; }
-      @media (max-width: 900px) { .hero-cert { grid-template-columns: 1fr; gap: 32px; } }
-      .cert-heading { max-width: 620px; }
-      .cert-eyebrow { font-family: var(--mono-family); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); margin: 0 0 20px 0; }
-      h1.device-name { font-family: var(--display-family); font-size: 48px; line-height: 1.08; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 20px 0; color: var(--ink); }
-      .manufacturer { font-family: var(--body-family); font-size: 18px; font-weight: 400; color: var(--slate-700); margin: 0 0 32px 0; }
+      /* ── Breadcrumb ── */
+      .breadcrumb { padding: 20px var(--content-pad) 0; font-family: var(--mono-family); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); }
+      .breadcrumb a { text-decoration: none; color: inherit; }
+      .breadcrumb .sep { padding: 0 8px; color: var(--slate-200); }
 
-      .status-pill { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono-family); font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 14px; border-radius: 2px; margin-bottom: 32px; }
+      /* ── Hero ── */
+      .hero-cert { padding: 32px var(--content-pad) 40px; display: grid; grid-template-columns: 1fr 280px; gap: 40px; align-items: start; }
+      @media (max-width: 760px) { :root { --content-pad: 36px; } .hero-cert { grid-template-columns: 1fr; gap: 24px; } }
+      .cert-heading { max-width: 520px; }
+      .cert-eyebrow { font-family: var(--mono-family); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); margin: 0 0 16px 0; }
+      h1.device-name { font-family: var(--display-family); font-size: 40px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 16px 0; color: var(--ink); text-wrap: balance; }
+      .manufacturer { font-family: var(--body-family); font-size: 17px; font-weight: 400; color: var(--slate-700); margin: 0 0 24px 0; }
+
+      .status-pill { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono-family); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 13px; border-radius: 2px; margin-bottom: 24px; }
       .status-pill.certified { background: var(--approved-50); color: var(--approved); border: 1px solid var(--approved); }
       .status-pill.surveillance { background: var(--caution-50); color: var(--caution); border: 1px solid var(--caution); }
       .status-pill.suspended { background: var(--restricted-50); color: var(--restricted); border: 1px solid var(--restricted); }
       .status-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-      .cert-card { background: var(--card); border: 1px solid var(--slate-200); border-radius: 4px; padding: 24px; }
-      .cert-card dt { font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); margin-bottom: 4px; }
-      .cert-card dd { font-family: var(--body-family); font-size: 15px; margin: 0 0 16px 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+      /* ── Cert card with stamp ── */
+      .cert-card { background: var(--card); border: 1px solid var(--slate-200); padding: 24px 20px 20px; position: relative; }
+      .cert-card dl { margin: 0; }
+      .cert-card dt { font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); margin-bottom: 3px; }
+      .cert-card dd { font-family: var(--body-family); font-size: 15px; margin: 0 0 14px 0; color: var(--ink); font-variant-numeric: tabular-nums; }
       .cert-card dd:last-child { margin-bottom: 0; }
       .cert-card dd.mono { font-family: var(--mono-family); font-size: 14px; }
 
-      section.block { padding: 40px 0; border-top: 1px solid var(--slate-200); }
-      section.block h2 { font-family: var(--display-family); font-size: 28px; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 20px 0; color: var(--ink); }
-      section.block h2 .num { display: inline-block; font-family: var(--mono-family); font-size: 14px; font-weight: 500; color: var(--slate-500); margin-right: 12px; letter-spacing: 0.04em; vertical-align: middle; }
-      section.block p { font-size: 16px; line-height: 1.7; margin: 0 0 16px 0; color: var(--ink); max-width: 68ch; }
+      /* Certification stamp */
+      .stamp { width: 72px; height: 72px; margin: 0 auto 20px; opacity: 0.55; }
 
-      .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-      @media (max-width: 720px) { .scope-grid { grid-template-columns: 1fr; } }
-      .scope-panel { padding: 24px; border-radius: 4px; }
+      /* ── Sections ── */
+      section.block { border-top: 1px solid var(--slate-200); }
+      .block-inner { padding: 32px var(--content-pad); }
+      section.block h2 { font-family: var(--display-family); font-size: 24px; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; margin: 0 0 16px 0; color: var(--ink); }
+      section.block h2 .num { display: inline-block; font-family: var(--mono-family); font-size: 13px; font-weight: 500; color: var(--slate-500); margin-right: 10px; letter-spacing: 0.04em; vertical-align: middle; }
+      section.block p { font-size: 15px; line-height: 1.7; margin: 0 0 16px 0; color: var(--slate-700); max-width: 64ch; }
+
+      .scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      @media (max-width: 640px) { .scope-grid { grid-template-columns: 1fr; } }
+      .scope-panel { padding: 20px; }
       .scope-panel.in { background: var(--approved-50); border: 1px solid var(--approved); }
       .scope-panel.out { background: var(--restricted-50); border: 1px solid var(--restricted); }
-      .scope-panel h3 { font-family: var(--mono-family); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 12px 0; }
+      .scope-panel h3 { font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 10px 0; }
       .scope-panel.in h3 { color: var(--approved); }
       .scope-panel.out h3 { color: var(--restricted); }
-      .scope-panel ul { padding-left: 20px; margin: 0; font-size: 15px; line-height: 1.65; color: var(--ink); }
-      .scope-panel li { margin-bottom: 8px; }
+      .scope-panel ul { padding-left: 18px; margin: 0; font-size: 14px; line-height: 1.65; color: var(--ink); }
+      .scope-panel li { margin-bottom: 6px; }
+      .scope-panel li:last-child { margin-bottom: 0; }
 
+      .table-wrap { overflow-x: auto; }
       table.evidence { width: 100%; border-collapse: collapse; margin: 8px 0 0 0; font-variant-numeric: tabular-nums; }
       table.evidence th { text-align: left; font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate-500); padding: 12px 16px 12px 0; border-bottom: 1px solid var(--slate-200); }
       table.evidence th:last-child, table.evidence td:last-child { padding-right: 0; text-align: right; }
@@ -108,19 +184,22 @@ scaffold: |-
       table.standards td.mono { font-family: var(--mono-family); color: var(--slate-700); white-space: nowrap; padding-right: 32px; }
       table.standards tr:last-child td { border-bottom: none; }
 
-      .reviewer { display: grid; grid-template-columns: 88px 1fr; gap: 24px; align-items: start; padding: 32px; background: var(--card); border: 1px solid var(--slate-200); border-radius: 4px; }
-      @media (max-width: 720px) { .reviewer { grid-template-columns: 1fr; } }
-      .reviewer img { width: 88px; height: 88px; border-radius: 50%; object-fit: cover; background: var(--slate-200); }
-      .reviewer .quote { font-family: var(--display-family); font-size: 20px; line-height: 1.5; font-weight: 500; color: var(--ink); margin: 0 0 16px 0; }
-      .reviewer .attrib { font-family: var(--mono-family); font-size: 12px; letter-spacing: 0.04em; color: var(--slate-500); }
-      .reviewer .attrib strong { color: var(--ink); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+      /* ── Reviewer with signature line ── */
+      .reviewer { display: grid; grid-template-columns: 80px 1fr; gap: 24px; align-items: start; padding: 28px; background: var(--card); border: 1px solid var(--slate-200); }
+      @media (max-width: 640px) { .reviewer { grid-template-columns: 1fr; } }
+      .reviewer img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; background: var(--slate-200); }
+      .reviewer .quote { font-family: var(--display-family); font-size: 18px; line-height: 1.5; font-weight: 500; font-style: italic; color: var(--ink); margin: 0 0 16px 0; }
+      .signature-line { width: 180px; border-top: 1px solid var(--ink); padding-top: 6px; margin-top: 4px; }
+      .signature-line .name { font-family: var(--mono-family); font-size: 10px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+      .signature-line .role { font-family: var(--mono-family); font-size: 10px; color: var(--slate-500); margin-top: 2px; }
 
-      footer.site { background: var(--ink-alt); color: #C9C4C0; padding: 56px 0; margin-top: 56px; }
-      footer.site img { height: 24px; width: auto; margin-bottom: 20px; }
-      footer.site .row { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; font-weight: 500; }
-      footer.site a { color: #C9C4C0; text-decoration: none; }
-      footer.site .copy { font-size: 12px; color: #767070; margin-top: 20px; }
-      footer.site .disclaimer { font-size: 12px; color: #767070; margin-top: 16px; max-width: 68ch; line-height: 1.6; }
+      /* ── Footer ── */
+      .cert-footer { background: var(--ink-alt); color: #C9C4C0; padding: 32px var(--content-pad); }
+      .cert-footer img { height: 24px; width: auto; margin-bottom: 16px; }
+      .footer-links { display: flex; gap: 20px; flex-wrap: wrap; font-family: var(--mono-family); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+      .footer-links a { color: #C9C4C0; text-decoration: none; }
+      .cert-footer .copy { font-size: 12px; color: #767070; margin-top: 16px; }
+      .cert-footer .disclaimer { font-size: 12px; color: #767070; margin-top: 12px; max-width: 64ch; line-height: 1.6; }
 
       .reveal-up {
         opacity: 0;
@@ -133,139 +212,220 @@ scaffold: |-
   </head>
   <body>
 
-    <header class="bar">
-      <div class="container">
-        <nav>
+    <div class="page">
+      <div class="page-grain"></div>
+      <div class="page-watermark">
+        <div class="page-watermark-inner" aria-hidden="true">
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+          <div class="wm-row offset">{{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}} {{brandName}}</div>
+        </div>
+      </div>
+      <div class="page-content">
+
+        <!-- Accent band -->
+        <div class="accent-band"></div>
+
+        <!-- Header -->
+        <header class="cert-header">
           <img src="{{logoUrlLight}}" alt="{{brandName}}">
           <div class="nav-links">{{navLinks}}</div>
-        </nav>
-      </div>
-    </header>
+        </header>
 
-    <div class="container">
-      <div class="breadcrumb">
-        <a href="{{registerUrl}}">Register</a><span class="sep">/</span>
-        <a href="{{manufacturerUrl}}">{{manufacturerName}}</a><span class="sep">/</span>
-        <span>{{deviceName}}</span>
-      </div>
-
-      <section class="hero-cert">
-        <div class="cert-heading">
-          <p class="cert-eyebrow">{{deviceClassEyebrow}}</p>
-          <h1 class="device-name">{{deviceName}}</h1>
-          <p class="manufacturer">{{manufacturerName}}</p>
-          {{statusPillBlock}}
-          <p style="max-width:60ch;font-size:17px;line-height:1.7;color:var(--slate-700);margin:0;">{{intendedUse}}</p>
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <a href="{{registerUrl}}">Register</a><span class="sep">/</span>
+          <a href="{{manufacturerUrl}}">{{manufacturerName}}</a><span class="sep">/</span>
+          <span style="color:var(--slate-700)">{{deviceName}}</span>
         </div>
 
-        <aside class="cert-card">
-          <dl style="margin:0;">
-            <dt>Certification ID</dt>
-            <dd class="mono">{{certificationId}}</dd>
+        <!-- Hero -->
+        <section class="hero-cert">
+          <div class="cert-heading">
+            <p class="cert-eyebrow">{{deviceClassEyebrow}}</p>
+            <h1 class="device-name">{{deviceName}}</h1>
+            <p class="manufacturer">{{manufacturerName}}</p>
+            {{statusPillBlock}}
+            <p style="max-width:56ch;font-size:16px;line-height:1.7;color:var(--slate-700);margin:0;">{{intendedUse}}</p>
+          </div>
 
-            <dt>Issued</dt>
-            <dd>{{issuedDate}}</dd>
+          <aside class="cert-card">
+            <!-- Certification stamp -->
+            <div class="stamp">
+              <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" fill="none" width="72" height="72">
+                <circle cx="36" cy="36" r="34" stroke="var(--approved)" stroke-width="1.5"/>
+                <circle cx="36" cy="36" r="31" stroke="var(--approved)" stroke-width="0.5"/>
+                <g stroke="var(--approved)" stroke-width="0.75">
+                  <line x1="36" y1="0" x2="36" y2="4"/>
+                  <line x1="36" y1="68" x2="36" y2="72"/>
+                  <line x1="0" y1="36" x2="4" y2="36"/>
+                  <line x1="68" y1="36" x2="72" y2="36"/>
+                </g>
+                <circle cx="36" cy="36" r="22" fill="var(--approved)" opacity="0.06"/>
+                <circle cx="36" cy="36" r="22" stroke="var(--approved)" stroke-width="1"/>
+                <path d="M25 36 L32 43 L47 28" stroke="var(--approved)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <defs>
+                  <path id="topArc" d="M 12,36 a 24,24 0 0,1 48,0"/>
+                  <path id="bottomArc" d="M 60,36 a 24,24 0 0,1 -48,0"/>
+                </defs>
+                <text font-family="'JetBrains Mono', monospace" font-size="6" font-weight="500" letter-spacing="0.12em" fill="var(--approved)">
+                  <textPath href="#topArc" startOffset="50%" text-anchor="middle">{{brandNameUpper}}</textPath>
+                </text>
+                <text font-family="'JetBrains Mono', monospace" font-size="5.5" font-weight="500" letter-spacing="0.1em" fill="var(--approved)">
+                  <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">CERTIFIED</textPath>
+                </text>
+              </svg>
+            </div>
+            <dl style="margin:0;">
+              <dt>Certification ID</dt>
+              <dd class="mono">{{certificationId}}</dd>
 
-            <dt>Valid until</dt>
-            <dd>{{validUntil}}</dd>
+              <dt>Issued</dt>
+              <dd>{{issuedDate}}</dd>
 
-            <dt>Next surveillance audit</dt>
-            <dd>{{nextSurveillanceDate}}</dd>
+              <dt>Valid until</dt>
+              <dd>{{validUntil}}</dd>
 
-            <dt>Route</dt>
-            <dd class="mono">{{conformityRoute}}</dd>
+              <dt>Next surveillance audit</dt>
+              <dd>{{nextSurveillanceDate}}</dd>
 
-            <dt>Signed by</dt>
-            <dd>{{signedByName}}</dd>
-          </dl>
-        </aside>
-      </section>
+              <dt>Route</dt>
+              <dd class="mono">{{conformityRoute}}</dd>
+
+              <dt>Signed by</dt>
+              <dd>{{signedByName}}</dd>
+            </dl>
+          </aside>
+        </section>
+
+        <!-- Scope -->
+        <section class="block">
+          <div class="block-inner">
+            <h2><span class="num">01</span>Scope of certification</h2>
+            <p>This certification covers the following, and no more. Any use outside the stated scope is outside the certification.</p>
+            <div class="scope-grid">
+              <div class="scope-panel in">
+                <h3>What this certification covers</h3>
+                <ul>
+                  {{scopeInList}}
+                </ul>
+              </div>
+              <div class="scope-panel out">
+                <h3>What this certification does NOT cover</h3>
+                <ul>
+                  {{scopeOutList}}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Standards -->
+        <section class="block">
+          <div class="block-inner">
+            <h2><span class="num">02</span>Standards assessed</h2>
+            <p>The technical documentation was assessed against the clauses below. Each row is a specific object in the file — not a generic reference.</p>
+            <div class="table-wrap">
+              <table class="standards">
+                <thead>
+                  <tr>
+                    <th>Standard</th>
+                    <th>Clause</th>
+                    <th>Applied to</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{standardsRows}}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Audit history -->
+        <section class="block">
+          <div class="block-inner">
+            <h2><span class="num">03</span>Audit history</h2>
+            <p>Every finding raised across the certification lifecycle, by ID, with its current status. Closed findings are retained on the public record.</p>
+            <div class="table-wrap">
+              <table class="evidence">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Finding</th>
+                    <th>Clause</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{auditRows}}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Reviewer statement -->
+        <section class="block">
+          <div class="block-inner">
+            <h2><span class="num">04</span>Reviewer statement</h2>
+            <div class="reviewer">
+              <img src="{{reviewerImageUrl}}" alt="{{reviewerName}}">
+              <div>
+                <p class="quote">{{reviewerStatement}}</p>
+                <div class="signature-line">
+                  <div class="name">{{reviewerName}}</div>
+                  <div class="role">{{reviewerRole}} · Signed {{signedDate}}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="cert-footer">
+          <img src="{{logoUrlDark}}" alt="{{brandName}}">
+          <div class="footer-links">{{footerLinks}}</div>
+          <p class="copy">{{copyright}}</p>
+          <p class="disclaimer">{{legalDisclaimer}}</p>
+        </footer>
+
+      </div>
     </div>
-
-    <div class="container">
-
-      <section class="block">
-        <h2><span class="num">01</span>Scope of certification</h2>
-        <p>This certification covers the following, and no more. Any use outside the stated scope is outside the certification.</p>
-        <div class="scope-grid">
-          <div class="scope-panel in">
-            <h3>What this certification covers</h3>
-            <ul>
-              {{scopeInList}}
-            </ul>
-          </div>
-          <div class="scope-panel out">
-            <h3>What this certification does NOT cover</h3>
-            <ul>
-              {{scopeOutList}}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="block">
-        <h2><span class="num">02</span>Standards assessed</h2>
-        <p>The technical documentation was assessed against the clauses below. Each row is a specific object in the file — not a generic reference.</p>
-        <table class="standards">
-          <thead>
-            <tr>
-              <th>Standard</th>
-              <th>Clause</th>
-              <th>Applied to</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{standardsRows}}
-          </tbody>
-        </table>
-      </section>
-
-      <section class="block">
-        <h2><span class="num">03</span>Audit history</h2>
-        <p>Every finding raised across the certification lifecycle, by ID, with its current status. Closed findings are retained on the public record.</p>
-        <table class="evidence">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Finding</th>
-              <th>Clause</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {{auditRows}}
-          </tbody>
-        </table>
-      </section>
-
-      <section class="block">
-        <h2><span class="num">04</span>Reviewer statement</h2>
-        <div class="reviewer">
-          <img src="{{reviewerImageUrl}}" alt="{{reviewerName}}">
-          <div>
-            <p class="quote">{{reviewerStatement}}</p>
-            <p class="attrib"><strong>{{reviewerName}}</strong><br>{{reviewerRole}} · Signed {{signedDate}}</p>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <footer class="site">
-      <div class="container">
-        <img src="{{logoUrlDark}}" alt="{{brandName}}">
-        <div class="row">{{footerLinks}}</div>
-        <p class="copy">{{copyright}}</p>
-        <p class="disclaimer">{{legalDisclaimer}}</p>
-      </div>
-    </footer>
 
     <script>
       (function () {
         if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
         var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (prefersReduced) return;
-        var selectors = ['.hero-cert > *', 'section.block > *', 'footer.site .container > *'].join(', ');
+        var selectors = ['.hero-cert > *', 'section.block > *', '.cert-footer > *'].join(', ');
         var els = document.querySelectorAll(selectors);
         for (var i = 0; i < els.length; i++) els[i].classList.add('reveal-up');
         var io = new IntersectionObserver(function (entries) {
@@ -282,10 +442,16 @@ scaffold: |-
 sections:
   - name: Header
     guidance: |-
-      Top-of-page brand bar.
-      • Background: palette token "Paper" (#F7F5F1).
-      • Logo: logo/primary asset variant=wordmark-on-light. Use asset.url verbatim.
-      • Nav in JetBrains Mono 13px UPPERCASE 0.06em, color Slate-700.
+      The page renders inside a `.page` container that simulates a physical certificate document sitting on a warm-grey ground. The page has:
+      • A double-rule inset border (1px outer at 20px inset, 0.5px inner at 24px)
+      • A subtle paper-grain texture overlay at 2% opacity
+      • A passport-style tiled watermark repeating the brand name at -45° and 2.8% opacity
+      • A 5px Scarlet accent band with fine-line security hatching at the very top
+
+      The header bar sits below the accent band inside `.page-content`.
+      • Logo: logo/primary asset variant=wordmark-on-light. Use asset.url verbatim as `<img>` src.
+      • Nav in JetBrains Mono 11px UPPERCASE 0.06em, color Slate-700.
+      • Full dark-theme support via CSS custom properties — all palette tokens are redefined under `prefers-color-scheme: dark` and `[data-theme="dark"]`.
     tone: utilitarian
     lengthHint: layout only
     required: true
@@ -323,6 +489,7 @@ sections:
   - name: Certification card
     guidance: |-
       Right-column card in the hero (stacks below on mobile).
+      • Opens with a certification stamp SVG (72×72, 55% opacity) — a circular seal with dual rings, compass ticks, a checkmark, and arc text reading the brand name (top) and "CERTIFIED" (bottom) using `<textPath>` on circular arcs. The stamp uses the Approved colour token.
       • Every field is a definition list <dl> pair — dt in JetBrains Mono 11px UPPERCASE Slate-500, dd in Inter 15px Ink (or JetBrains Mono 14px for the ID and route with dd.mono class).
       • Six fields, in this order:
         1. Certification ID — mono, e.g. `SCR-2026-0117`.
@@ -387,6 +554,7 @@ sections:
       • If the certification is CERTIFIED and unremarkable, the person's default quote applies.
       • If the certification is SURVEILLANCE PENDING or SUSPENDED, the reviewer must have supplied a specific statement in the review file — use that verbatim. Do NOT invent a reviewer statement for a problematic certification.
       • Signed date is the date the reviewer put their name on the certificate — long-form ("15 September 2026").
+      • The reviewer's name and role render in a formal signature block: a 180px rule line with the name in JetBrains Mono 10px UPPERCASE above the role in Slate-500.
     tone: personal, named
     lengthHint: 1–2 sentences
     required: true
@@ -394,10 +562,10 @@ sections:
 
   - name: Footer
     guidance: |-
-      Site-wide footer.
-      • Background: palette token "Ink" (#0A0908).
-      • Logo: logo/primary asset variant=wordmark-on-dark.
-      • Link row: JetBrains Mono 12px UPPERCASE 0.06em color #C9CDD2. Three links: Standards register, Services, Contact.
+      Footer sits inside the physical page container (`.cert-footer` inside `.page-content`).
+      • Background: palette token "Ink-alt" (#1E1E1F).
+      • Logo: logo/primary asset variant=wordmark-on-dark. Use asset.url verbatim as `<img>` src.
+      • Link row: JetBrains Mono 11px UPPERCASE 0.06em color #C9C4C0. Three links: Standards register, Services, Contact.
       • Legal disclaimer VERBATIM: "Scarlet is a Notified Body under Regulation (EU) 2017/745. This page is the public record of a certification issued by Scarlet on the date shown. The scope of certification is bounded by the fields on this page. Use of the certified device outside the stated scope is outside the certification."
     tone: utilitarian, compliant
     lengthHint: 3 lines + disclaimer
