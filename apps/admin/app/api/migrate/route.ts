@@ -28,17 +28,20 @@ export async function POST(req: Request) {
     );
   }
 
+  const url = new URL(req.url);
+  const brandFilter = url.searchParams.get('brand');
+
+  // IMPORTANT: getStoreBackend() returns a cached value populated by
+  // getStore(). On a cold start the cache is empty, so we MUST call
+  // getStore() first or the backend check returns null and bails —
+  // same trap as the boot hook in instrumentation-node.ts.
+  const store = await getStore();
   if (getStoreBackend() !== 'postgres') {
     return NextResponse.json(
       { ok: false, error: 'Postgres backend not configured.' },
       { status: 400 },
     );
   }
-
-  const url = new URL(req.url);
-  const brandFilter = url.searchParams.get('brand');
-
-  const store = await getStore();
   const allBrands = await store.listBrands();
   const brands = brandFilter
     ? allBrands.filter((b) => b.id === brandFilter)
