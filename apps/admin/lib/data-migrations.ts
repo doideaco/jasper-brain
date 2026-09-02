@@ -368,7 +368,7 @@ export async function applyDataMigrations(
   const TEMPLATE_SCAFFOLD_MARKERS: Record<string, string> = {
     // Bumped marker each time the seed scaffold changes meaningfully so
     // the migration re-fires on the next cold start.
-    'blog-post': 'header.bar img { height: 40px;',
+    'blog-post': 'header.bar img { height: 28px;',
     'pitch-deck': '.slide.cover img.logo { height: 60px;',
     'talk-deck': '.slide.cover img.logo { height: 60px;',
     // product-landing-page: was a structure-only template (no scaffold).
